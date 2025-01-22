@@ -1,21 +1,25 @@
-import { http } from '@google-cloud/functions-framework';
+import { http, Request, Response } from '@google-cloud/functions-framework';
 import { z } from 'zod';
 
-import { errorHandler } from '@framework/middlewares/error-handler';
-import { validateBody } from '@framework/middlewares/validation';
+import { ErrorHandlerMiddleware } from '@framework/middlewares/ErrorHandlerMiddleware';
+import { BodyValidationMiddleware } from '@framework/middlewares/BodyValidationMiddleware';
+import { ResponseWrapperMiddleware } from '@framework/middlewares/ResponseWrapperMiddleware';
 import { Handler } from '@core/handler';
 
 const requestSchema = z.object({
   name: z.string().min(1),
 });
 
-const helloWorld = Handler.use(errorHandler())
-  .use(validateBody(requestSchema))
-  .handle(async (req, res) => {
-    const { name } = req.body;
-    res.json({
+const helloWorldHandler = Handler.use(new ErrorHandlerMiddleware())
+  .use(new BodyValidationMiddleware(requestSchema))
+  .use(new ResponseWrapperMiddleware())
+  .handle(async (context) => {
+    const { name } = context.req.validatedBody as { name: string };
+    context.res.json({
       message: `Hello, ${name}!`,
     });
   });
 
-http('helloWorld', helloWorld);
+export const helloWorld = http('helloWorld', (req: Request, res: Response): Promise<void> => {
+  return helloWorldHandler.execute(req, res);
+});

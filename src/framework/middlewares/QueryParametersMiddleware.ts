@@ -1,21 +1,18 @@
-import { BaseMiddleware } from './base/Middleware';
-import { Request, Response, NextFunction } from '@google-cloud/functions-framework';
+import { BaseMiddleware } from '@core/handler';
+import { Context } from '@framework/middlewares/base/Middleware';
+import { HttpError } from '@core/errors';
 
-export class QueryParametersMiddleware extends BaseMiddleware {
-  constructor(private readonly requiredParams: string[] = []) {
-    super();
-  }
+export class QueryParametersMiddleware implements BaseMiddleware {
+  constructor(private readonly requiredParams: string[] = []) {}
 
-  async before(req: Request, res: Response, next: NextFunction): Promise<void> {
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    req.query = Object.fromEntries(url.searchParams);
+  async before(context: Context): Promise<void> {
+    const url = new URL(context.req.url, `http://${context.req.headers.host}`);
+    context.req.query = Object.fromEntries(url.searchParams);
 
     for (const param of this.requiredParams) {
-      if (!req.query[param]) {
-        throw new Error(`Missing required query parameter: ${param}`);
+      if (!context.req.query[param]) {
+        throw new HttpError(400, `Missing required query parameter: ${param}`);
       }
     }
-
-    await next();
   }
 }

@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { Container } from 'typedi';
 import { logger } from '@utils/logger';
 import { HttpError } from '@core/errors';
-import { Context } from '@framework/middlewares/base/Middleware';
+import { Context, CustomResponse } from '@framework/middlewares/base/Middleware';
 import { BaseMiddleware } from '@core/handler';
 
 export const bodyParser = (): BaseMiddleware => ({
@@ -59,7 +59,7 @@ export const authentication = (
 
     try {
       const token = authHeader.split('Bearer ')[1];
-      context.req.user = await verifyToken(token);
+      context.user = await verifyToken(token);
     } catch (error) {
       throw new HttpError(401, 'Invalid authentication');
     }
@@ -129,7 +129,7 @@ export const responseWrapper = (): BaseMiddleware => ({
   before: async (context: Context): Promise<void> => {
     const originalJson = context.res.json.bind(context.res);
 
-    context.res.json = (body: unknown) => {
+    context.res.json = (body: unknown): CustomResponse => {
       return originalJson({
         success: context.res.statusCode >= 200 && context.res.statusCode < 300,
         statusCode: context.res.statusCode,
