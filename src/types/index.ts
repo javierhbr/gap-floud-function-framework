@@ -11,6 +11,7 @@ export interface Context {
   container: Container;
   request: Request;
   response: Response;
+  businessData: Map<string, unknown>;
 }
 
 export interface ErrorResponse {

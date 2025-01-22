@@ -1,8 +1,8 @@
 import { http } from '@google-cloud/functions-framework';
 import { z } from 'zod';
 
-import { errorHandler } from '@/middleware/error-handler';
-import { validateBody } from '@/middleware/validation';
+import { errorHandler } from '@framework/middlewares/error-handler';
+import { validateBody } from '@framework/middlewares/validation';
 import { Handler } from '@core/handler';
 
 const requestSchema = z.object({

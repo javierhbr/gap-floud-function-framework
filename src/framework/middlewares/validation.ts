@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { MiddlewareFunction } from '../types';
-import { ValidationError } from '../core/errors';
+import { MiddlewareFunction } from '../../types';
+import { ValidationError } from '../../core/errors';
 
 export const validateBody = (schema: z.ZodType): MiddlewareFunction => {
   return async (req, res, next) => {

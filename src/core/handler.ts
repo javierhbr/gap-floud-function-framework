@@ -1,38 +1,63 @@
-import { Request, Response, NextFunction } from '@google-cloud/functions-framework';
-import { Container } from 'typedi';
+import Container from 'typedi';
+import { Context, CustomRequest, CustomResponse } from '@framework/middlewares/base/Middleware';
 
-export type Middleware = (req: Request, res: Response, next: NextFunction) => Promise<void> | void;
-export type HandlerFunction = (req: Request, res: Response) => Promise<void> | void;
+export interface BaseMiddleware {
+  before?: (context: Context) => Promise<void>;
+  after?: (context: Context) => Promise<void>;
+  onError?: (error: Error, context: Context) => Promise<void>;
+}
 
+// handler.ts
 export class Handler {
-  private middlewares: Middleware[] = [];
-  private static container: Container;
+  private BaseMiddlewares: BaseMiddleware[] = [];
+  private handler!: (context: Context) => Promise<void>;
 
-  static use(middleware: Middleware): Handler {
+  static use(BaseMiddleware: BaseMiddleware): Handler {
     const handler = new Handler();
-    handler.middlewares.push(middleware);
+    handler.BaseMiddlewares.push(BaseMiddleware);
     return handler;
   }
 
-  use(middleware: Middleware): Handler {
-    this.middlewares.push(middleware);
+  use(BaseMiddleware: BaseMiddleware): Handler {
+    this.BaseMiddlewares.push(BaseMiddleware);
     return this;
   }
 
-  handle(handlerFn: HandlerFunction): HandlerFunction {
-    return async (req: Request, res: Response): Promise<void> => {
-      const currentMiddlewareIndex = 0;
+  handle(handler: (context: Context) => Promise<void>): Handler {
+    this.handler = handler;
+    return this;
+  }
 
-      const executeMiddleware = async (index: number): Promise<void> => {
-        if (index === this.middlewares.length) {
-          await handlerFn(req, res);
-          return;
-        }
-
-        await this.middlewares[index](req, res, () => executeMiddleware(index + 1));
-      };
-
-      await executeMiddleware(currentMiddlewareIndex);
+  async execute(req: CustomRequest, res: CustomResponse): Promise<void> {
+    const context: Context = {
+      container: Container.of(),
+      req,
+      res,
+      error: null,
+      businessData: new Map(),
     };
+
+    try {
+      // Execute before BaseMiddlewares
+      for (const BaseMiddleware of this.BaseMiddlewares) {
+        if (BaseMiddleware.before) {
+          await BaseMiddleware.before(context);
+        }
+      }
+
+      await this.handler(context);
+
+      for (const BaseMiddleware of [...this.BaseMiddlewares].reverse()) {
+        if (BaseMiddleware.after) {
+          await BaseMiddleware.after(context);
+        }
+      }
+    } catch (error) {
+      for (const BaseMiddleware of [...this.BaseMiddlewares].reverse()) {
+        if (BaseMiddleware.onError) {
+          await BaseMiddleware.onError(error as Error, context);
+        }
+      }
+    }
   }
 }

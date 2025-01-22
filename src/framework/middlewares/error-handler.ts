@@ -1,5 +1,5 @@
-import { MiddlewareFunction, ErrorResponse } from '../types';
-import { HttpError } from '../core/errors';
+import { MiddlewareFunction, ErrorResponse } from '../../types';
+import { HttpError } from '../../core/errors';
 
 export const errorHandler = (): MiddlewareFunction => {
   return async (req, res, next) => {
