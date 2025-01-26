@@ -1,0 +1,50 @@
+# cloudbuild.yaml
+steps:
+  # Install dependencies
+  - name: 'node:18'
+    entrypoint: npm
+    args: ['install']
+
+  # Run tests (if any)
+  - name: 'node:18'
+    entrypoint: npm
+    args: ['test']
+
+  # Deploy to Cloud Functions
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - functions
+      - deploy
+      - userApi
+      - --runtime=nodejs18
+      - --trigger-http
+      - --entry-point=userApi
+      - --region=us-central1
+      - --memory=256MB
+      - --timeout=60s
+      - --min-instances=0
+      - --max-instances=10
+      - --set-env-vars=NODE_ENV=production
+      - --allow-unauthenticated
+      - --gen2
+      - --openapi-spec=openapi.yaml
+
+# Enable required APIs in your GCP project
+# gcloud services enable
+#   cloudfunctions.googleapis.com \
+#   cloudbuild.googleapis.com \
+#   cloudscheduler.googleapis.com
+
+
+#gcloud functions deploy userApi \
+#  --runtime nodejs18 \
+#  --trigger-http \
+#  --entry-point=userApi \
+#  --region=us-central1 \
+#  --openapi-spec=openapi.yaml \
+#  --gen2
+
+#gcloud builds submit --config=cloudbuild.yaml
+
+
+
