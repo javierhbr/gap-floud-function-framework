@@ -66,7 +66,7 @@ export const authentication = (
   },
 });
 
-export const headerVariables = (requiredHeaders: string[]): BaseMiddleware => ({
+export const headerVariablesValidator = (requiredHeaders: string[]): BaseMiddleware => ({
   before: async (context: Context): Promise<void> => {
     for (const header of requiredHeaders) {
       if (!context.req.headers?.[header.toLowerCase()]) {
@@ -129,11 +129,11 @@ export const responseWrapper = (): BaseMiddleware => ({
   before: async (context: Context): Promise<void> => {
     const originalJson = context.res.json.bind(context.res);
 
-    context.res.json = (body: unknown): CustomResponse => {
+    context.res.json = (body: any): CustomResponse => {
       return originalJson({
         success: context.res.statusCode >= 200 && context.res.statusCode < 300,
         statusCode: context.res.statusCode,
-        data: body,
+        data: context.res.locals.responseBody,
         timestamp: new Date().toISOString(),
       });
     };
@@ -142,6 +142,20 @@ export const responseWrapper = (): BaseMiddleware => ({
   after: async (context: Context): Promise<void> => {
     if (!context.res.headersSent) {
       context.res.json({ message: 'Request completed successfully' });
+    }
+  },
+});
+
+export const responseWrapperV2 = <T>() => ({
+  after: async (context: Context) => {
+    if (!context.res.headersSent) {
+      const statusCode = context.res.statusCode || 200;
+      const body = context.res.locals.responseBody as T;
+      context.res.status(statusCode).json({
+        success: true,
+        data: body,
+        timestamp: new Date().toISOString(),
+      });
     }
   },
 });

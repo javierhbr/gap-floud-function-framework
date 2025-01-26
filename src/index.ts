@@ -1,115 +1,109 @@
+import 'reflect-metadata';
 import * as functions from '@google-cloud/functions-framework';
 import express from 'express';
-import { Request, Response } from 'express';
+import { Container } from 'typedi';
+import { z } from 'zod';
+import { UserQueryParams } from './users/http.types';
+import { BaseMiddleware, Handler } from './core/handler';
+import {
+  bodyValidator,
+  dependencyInjection,
+  errorHandler,
+  headerVariablesValidator,
+  pathParameters,
+  queryParameters,
+  responseWrapper,
+  responseWrapperV2,
+} from './framework/middlewares';
+import { UserService } from './users/user.service';
+import { Context, CustomRequest, CustomResponse } from './framework/middlewares/base/Middleware';
+import { HttpError } from './core/errors';
+import { logger } from './utils/logger';
 
-// Define interfaces for our data structures
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  age?: number;
-}
+// Initialize container at cold start
+// const userService = Container.get(UserService);
 
-interface UpdateUserRequest {
-  name?: string;
-  email?: string;
-  age?: number;
-}
+// const businessData = new Map<string, any>();
+Container.set('businessData', new Map<string, any>());
 
-// Create an express app
 const app = express();
 app.use(express.json());
 
-// GET endpoint with query parameters
-// Example: /api/users?age=25&active=true
-app.get('/api/users', (req: Request, res: Response) => {
-  const { age, active } = req.query;
-
-  console.log(`Fetching users with filters - age: ${age}, active: ${active}`);
-
-  // Here you would typically query your database
-  // This is just an example response
-  const users: User[] = [
-    { id: '1', name: 'John Doe', email: 'john@example.com', age: Number(age) || 30 },
-  ];
-
-  res.status(200).json({
-    success: true,
-    data: users,
-    filters: { age, active },
-  });
+// Schemas
+const createUserSchema = z.object({
+  name: z.string(),
+  email: z.string().email(),
+  age: z.number().optional(),
 });
 
-// GET endpoint with path parameter
-// Example: /api/users/123
-app.get('/api/users/:userId', (req: Request, res: Response) => {
-  const { userId } = req.params;
-
-  console.log(`Fetching user with ID: ${userId}`);
-
-  // Here you would typically query your database
-  const user: User = {
-    id: userId,
-    name: 'John Doe',
-    email: 'john@example.com',
-  };
-
-  res.status(200).json({
-    success: true,
-    data: user,
-  });
+export const pathParamValidator = (params: string[]): BaseMiddleware => ({
+  before: async (context: Context) => {
+    const missingParams = params.filter((param) => !context.req.params[param]);
+    if (missingParams.length > 0) {
+      throw new HttpError(400, `Missing path parameters: ${missingParams.join(', ')}`);
+    }
+  },
 });
 
-// POST endpoint with request body
-// Example: POST /api/users
-app.post('/api/users', (req: Request, res: Response) => {
-  const newUser: User = req.body;
-
-  // Validate required fields
-  if (!newUser.name || !newUser.email) {
-    return res.status(400).json({
-      success: false,
-      error: 'Name and email are required fields',
-    });
-  }
-
-  console.log('Creating new user:', newUser);
-
-  // Here you would typically save to your database
-  // For this example, we'll just return the created user with an ID
-  const createdUser: User = {
-    ...newUser,
-    id: Math.random().toString(36).substring(7),
-  };
-
-  res.status(201).json({
-    success: true,
-    data: createdUser,
+// List users handler with query parameters
+const listUsersHandler = Handler.use(dependencyInjection())
+  .use(queryParameters())
+  .use(errorHandler())
+  .use(responseWrapperV2<any>())
+  .handle(async (context) => {
+    const queryParams = context.req.query as UserQueryParams;
+    const users = await Container.get(UserService).listUsers(queryParams);
+    context.res.locals.responseBody = users;
   });
-});
 
-// PUT endpoint with path parameter and request body
-// Example: PUT /api/users/123
-app.put('/api/users/:userId', (req: Request, res: Response) => {
-  const { userId } = req.params;
-  const updates: UpdateUserRequest = req.body;
-
-  console.log(`Updating user ${userId} with:`, updates);
-
-  // Here you would typically update your database
-  // For this example, we'll just return the updated user
-  const updatedUser: User = {
-    id: userId,
-    name: updates.name || 'John Doe',
-    email: updates.email || 'john@example.com',
-    age: updates.age,
-  };
-
-  res.status(200).json({
-    success: true,
-    data: updatedUser,
+// Get user by ID handler with path parameter
+const getUserHandler = Handler.use(dependencyInjection())
+  .use(pathParamValidator(['userId']))
+  // .use(pathParameters())
+  .use(errorHandler())
+  .use(responseWrapperV2<any>())
+  .handle(async (context: Context) => {
+    const { userId } = context.req.params;
+    logger.info(`Getting user ${JSON.stringify(context.req.params)}`);
+    const user = await Container.get(UserService).getUser(userId);
+    context.res.locals.responseBody = user;
   });
-});
 
+// Create user handler
+const createUserHandler = Handler.use(dependencyInjection())
+  // .use(bodyValidator(createUserSchema))
+  // .use(headerVariablesValidator(['content-type']))
+  .use(errorHandler())
+  .use(responseWrapperV2<any>())
+  .handle(async (context) => {
+    const user = await Container.get(UserService).createUser(context.req.body);
+    context.res.locals.responseBody = user;
+    context.res.status(201);
+  });
+
+// Health check handler
+const healthCheckHandler = Handler.use(errorHandler())
+  .use(responseWrapperV2<any>())
+  .handle(async (context) => {
+    context.res.locals.responseBody = {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+    };
+  });
+
+// Route definitions
+
+app.get('/api/users', (req, res) =>
+  listUsersHandler.execute(req as unknown as CustomRequest, res as unknown as CustomResponse)
+);
+app.get('/api/users/:userId', (req, res) =>
+  getUserHandler.execute(req as unknown as CustomRequest, res as unknown as CustomResponse)
+);
+app.post('/api/users', (req, res) =>
+  createUserHandler.execute(req as unknown as CustomRequest, res as unknown as CustomResponse)
+);
+app.get('/health', (req, res) =>
+  healthCheckHandler.execute(req as unknown as CustomRequest, res as unknown as CustomResponse)
+);
 // Export the function
 exports.userApi = functions.http('userApi', app);

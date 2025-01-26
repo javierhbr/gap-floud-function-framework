@@ -8,7 +8,7 @@ import {
   bodyValidator,
   dependencyInjection,
   authentication,
-  headerVariables,
+  headerVariablesValidator,
   pathParameters,
   queryParameters,
   errorHandler,
@@ -68,7 +68,7 @@ const verifyToken = async (_token: string): Promise<unknown> => {
 const createUserHandler = Handler.use(dependencyInjection())
   .use(bodyParser())
   .use(authentication(verifyToken))
-  .use(headerVariables(['content-type']))
+  .use(headerVariablesValidator(['content-type']))
   .use(pathParameters())
   .use(queryParameters())
   .use(bodyValidator(userSchema))

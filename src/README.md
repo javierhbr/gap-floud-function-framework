@@ -257,3 +257,70 @@ The framework is built with TypeScript and provides full type safety. Use the pr
 import { Context, CustomRequest, CustomResponse } from '@framework/middlewares/base/Middleware';
 import { BaseMiddleware } from '../../core/handler';
 ```
+
+
+```bash
+# Health Check
+curl http://localhost:8080/health
+
+# List Users - No parameters
+curl http://localhost:8080/api/users
+
+# List Users - With age filter
+curl "http://localhost:8080/api/users?age=25"
+
+# List Users - With active filter
+curl "http://localhost:8080/api/users?active=true"
+
+# List Users - With both filters
+curl "http://localhost:8080/api/users?age=25&active=true"
+
+# Get User by ID
+curl http://localhost:8080/api/users/123
+
+# Create User - Minimal required fields
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"name":"John Doe","email":"john@example.com"}' \
+  http://localhost:8080/api/users
+
+# Create User - All fields
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "age": 30
+  }' \
+  http://localhost:8080/api/users
+
+# Create User - Test validation error (missing email)
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"name":"John Doe"}' \
+  http://localhost:8080/api/users
+
+# Create User - Test validation error (invalid email)
+curl -X POST \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "John Doe",
+    "email": "invalid-email"
+  }' \
+  http://localhost:8080/api/users
+
+# Get Non-existent User (should return 404)
+curl http://localhost:8080/api/users/nonexistent-id
+
+# Test without Content-Type header (should fail)
+curl -X POST \
+  -d '{"name":"John Doe","email":"john@example.com"}' \
+  http://localhost:8080/api/users
+
+# Pretty print responses (add to any command)
+# Windows PowerShell
+curl http://localhost:8080/api/users | ConvertFrom-Json | ConvertTo-Json
+
+# Unix/Linux/MacOS
+curl http://localhost:8080/api/users | json_pp 
+```

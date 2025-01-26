@@ -19,7 +19,7 @@ export interface Context {
   req: CustomRequest;
   res: CustomResponse;
   container?: Container;
-  error: Error | null;
+  error?: Error | null;
   businessData: Map<string, unknown>;
   user?: unknown;
 }
