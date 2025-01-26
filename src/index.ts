@@ -1,3 +1,4 @@
+import * as functions from 'firebase-functions';
 import { http, Request, Response } from '@google-cloud/functions-framework';
 
 import { z } from 'zod';
@@ -13,7 +14,7 @@ import {
   errorHandler,
   responseWrapper,
 } from './framework/middlewares';
-import { Handler } from '@core/handler';
+import { Handler } from './core/handler';
 
 // Request schema validation
 const helloWorldSchema = z.object({
@@ -80,4 +81,8 @@ const createUserHandler = Handler.use(dependencyInjection())
 
 export const createUser = http('createUser', (req: Request, res: Response): Promise<void> => {
   return createUserHandler.execute(req, res);
+});
+
+export const helloWorldV2 = functions.https.onRequest((req, res) => {
+  res.send({ message: 'Hello from Firebase!' });
 });

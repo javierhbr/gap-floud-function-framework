@@ -1,5 +1,5 @@
-import { HttpError } from '@core/errors';
 import jwt from 'jsonwebtoken';
+import { HttpError } from '../core/errors';
 
 interface TokenPayload {
   userId: string;

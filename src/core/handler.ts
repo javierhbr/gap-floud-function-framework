@@ -1,11 +1,17 @@
 import Container from 'typedi';
-import { Context, CustomRequest, CustomResponse } from '@framework/middlewares/base/Middleware';
+import { Context, CustomRequest, CustomResponse } from '../framework/middlewares/base/Middleware';
 
 export interface BaseMiddleware {
   before?: (context: Context) => Promise<void>;
   after?: (context: Context) => Promise<void>;
   onError?: (error: Error, context: Context) => Promise<void>;
 }
+
+// export interface BaseMiddleware {
+//   before?(context: Context): Promise<void>;
+//   after?(context: Context): Promise<void>;
+//   onError?(context: Context): Promise<void>;
+// }
 
 // handler.ts
 export class Handler {

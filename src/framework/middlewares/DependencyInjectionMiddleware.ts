@@ -1,6 +1,6 @@
 import { Container } from 'typedi';
-import { BaseMiddleware } from '@core/handler';
-import { Context } from '@framework/middlewares/base/Middleware';
+import { BaseMiddleware } from '../../core/handler';
+import { Context } from './base/Middleware';
 
 export class DependencyInjectionMiddleware implements BaseMiddleware {
   private static container: Container;

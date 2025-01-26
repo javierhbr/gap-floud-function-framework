@@ -255,5 +255,5 @@ The framework is built with TypeScript and provides full type safety. Use the pr
 
 ```typescript
 import { Context, CustomRequest, CustomResponse } from '@framework/middlewares/base/Middleware';
-import { BaseMiddleware } from '@core/handler';
+import { BaseMiddleware } from '../../core/handler';
 ```

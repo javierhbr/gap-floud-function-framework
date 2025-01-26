@@ -1,7 +1,7 @@
-import { BaseMiddleware } from '@core/handler';
-import { Context } from '@framework/middlewares/base/Middleware';
-import { HttpError } from '@core/errors';
-import { verifyToken } from '@utils/auth';
+import { BaseMiddleware } from '../../core/handler';
+import { Context } from './base/Middleware';
+import { HttpError } from '../../core/errors';
+import { verifyToken } from '../../utils/auth';
 
 export class AuthenticationMiddleware implements BaseMiddleware {
   async before(context: Context): Promise<void> {

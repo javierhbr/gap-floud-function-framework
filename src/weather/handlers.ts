@@ -1,37 +1,39 @@
-import { Handler } from '../core/handler';
-import { Container } from 'inversify';
-import {
-  bodyParser,
-  bodyValidator,
-  errorHandler,
-  responseWrapper,
-  pathParameters,
-  authentication,
-} from '../framework/middlewares';
+import { ContainerInstance } from 'typedi';
+
 import { weatherSchema, weatherUpdateSchema } from './schemas';
 import { DateHeaderMiddleware } from './middlewares/DateHeaderMiddleware';
 import { WeatherService } from './services/WeatherService';
 import { WeatherApiService } from './services/WeatherApiService';
 import { PubSubService } from './services/PubSubService';
 import { WeatherValidation } from './WeatherValidation';
-import { verifyToken } from '../utils/auth';
 import { Firestore } from '@google-cloud/firestore';
 import { PubSub } from '@google-cloud/pubsub';
+import { Handler } from '../core/handler';
+import {
+  authentication,
+  bodyParser,
+  bodyValidator,
+  errorHandler,
+  pathParameters,
+  responseWrapper,
+} from '../framework/middlewares';
+import { verifyToken } from '../utils/auth';
+import { WeatherData } from './types';
 
 // Setup dependency injection
-const container = new Container();
-container.bind(Firestore).toConstantValue(new Firestore());
-container.bind(PubSub).toConstantValue(new PubSub());
-container.bind(WeatherService).toSelf();
-container
-  .bind(WeatherApiService)
-  .toConstantValue(
-    new WeatherApiService(process.env.WEATHER_API_KEY!, process.env.WEATHER_API_URL!)
-  );
-container
-  .bind(PubSubService)
-  .toConstantValue(new PubSubService(container.get(PubSub), 'high-temperature-topic'));
-container.bind(WeatherValidation).toSelf();
+const container = new ContainerInstance('weatherContainer');
+container.set(Firestore, new Firestore());
+container.set(PubSub, new PubSub());
+container.set(WeatherService, new WeatherService(container.get(Firestore)));
+container.set(
+  WeatherApiService,
+  new WeatherApiService(process.env.WEATHER_API_KEY!, process.env.WEATHER_API_URL!)
+);
+container.set(PubSubService, new PubSubService(container.get(PubSub), 'high-temperature-topic'));
+container.set(
+  WeatherValidation,
+  new WeatherValidation(container.get(WeatherService), container.get(WeatherApiService))
+);
 
 // GET handler
 export const weatherHandlerGet = new Handler()
@@ -63,7 +65,7 @@ export const weatherHandlerPost = new Handler()
     const pubSubService = container.get(PubSubService);
     const weatherValidation = container.get(WeatherValidation);
 
-    const data = context.req.validatedBody;
+    const data: WeatherData = context.req.validatedBody as WeatherData;
 
     // Validate weather data
     const isValid = await weatherValidation.checkByDate(data.date);
@@ -71,16 +73,17 @@ export const weatherHandlerPost = new Handler()
       throw new Error('Invalid weather data');
     }
 
-    const id = await weatherService.saveWeather(data);
-    context.businessData.set('weatherId', id);
+    const weatherId = await weatherService.saveWeather(data);
+    context.businessData.set('weatherId', weatherId);
 
     // Check temperature threshold
     if (data.temperature > 100) {
-      await pubSubService.publishHighTemperature({ id, ...data });
+      await pubSubService.publishHighTemperature({ ...data, id: weatherId });
+
       context.businessData.set('highTemperatureAlert', true);
     }
 
-    context.res.status(201).json({ id });
+    context.res.status(201).json({ weatherId });
   });
 
 // PUT handler
@@ -97,7 +100,7 @@ export const weatherHandlerPut = new Handler()
     const weatherService = container.get(WeatherService);
     const pubSubService = container.get(PubSubService);
 
-    const data = context.req.validatedBody;
+    const data: any = context.req.validatedBody;
 
     await weatherService.updateWeather(id, data);
     context.businessData.set('updatedWeatherId', id);

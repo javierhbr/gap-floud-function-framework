@@ -1,5 +1,5 @@
-import { BaseMiddleware } from './base/Middleware';
-import { Context } from '@framework/types/Context';
+import { Context } from './base/Middleware';
+import { BaseMiddleware } from '../../core/handler';
 
 export class HeaderVariablesMiddleware implements BaseMiddleware {
   constructor(private requiredHeaders: string[]) {}

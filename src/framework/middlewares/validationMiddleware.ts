@@ -1,7 +1,7 @@
-import { BaseMiddleware } from '@core/handler';
-import { Context } from '@framework/middlewares/base/Middleware';
+import { BaseMiddleware } from '../../core/handler';
+import { Context } from './base/Middleware';
 import { z } from 'zod';
-import { HttpError } from '@core/errors';
+import { HttpError } from '../../core/errors';
 
 export class ValidationMiddleware implements BaseMiddleware {
   constructor(private readonly schema: z.ZodSchema) {}

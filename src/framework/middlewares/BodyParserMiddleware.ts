@@ -1,6 +1,6 @@
-import { BaseMiddleware } from '@core/handler';
-import { Context } from '@framework/middlewares/base/Middleware';
-import { HttpError } from '@core/errors';
+import { BaseMiddleware } from '../../core/handler';
+import { Context } from './base/Middleware';
+import { HttpError } from '../../core/errors';
 
 export class BodyParserMiddleware implements BaseMiddleware {
   async before(context: Context): Promise<void> {

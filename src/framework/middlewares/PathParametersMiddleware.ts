@@ -1,5 +1,5 @@
-import { BaseMiddleware } from './base/Middleware';
-import { Context } from '@framework/types/Context';
+import { Context } from './base/Middleware';
+import { BaseMiddleware } from '../../core/handler';
 
 export class PathParametersMiddleware implements BaseMiddleware {
   async before(context: Context): Promise<void> {

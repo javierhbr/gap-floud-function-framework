@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import { Container } from 'typedi';
-import { logger } from '@utils/logger';
-import { HttpError } from '@core/errors';
-import { Context, CustomResponse } from '@framework/middlewares/base/Middleware';
-import { BaseMiddleware } from '@core/handler';
+import { HttpError } from '../../core/errors';
+import { BaseMiddleware } from '../../core/handler';
+import { Context, CustomResponse } from './base/Middleware';
+import { logger } from '../../utils/logger';
 
 export const bodyParser = (): BaseMiddleware => ({
   before: async (context: Context): Promise<void> => {
