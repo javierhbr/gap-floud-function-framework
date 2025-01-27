@@ -1,28 +1,22 @@
-import { z } from 'zod';
+import { z, ZodSchema } from 'zod';
 import { Container } from 'typedi';
 import { HttpError } from '../../core/errors';
 import { BaseMiddleware } from '../../core/handler';
-import { Context, CustomResponse } from './base/Middleware';
+import { Context } from './base/Middleware';
 import { logger } from '../../utils/logger';
 
 export const bodyParser = (): BaseMiddleware => ({
   before: async (context: Context): Promise<void> => {
-    if (context.req.method === 'POST' || context.req.method === 'PUT') {
-      if (typeof context.req.body === 'string') {
-        try {
-          context.req.parsedBody = JSON.parse(context.req.body);
-        } catch (error) {
-          throw new HttpError(400, 'Invalid JSON body');
-        }
-      } else if (context.req.body?.message?.data) {
-        try {
-          const decoded = Buffer.from(context.req.body.message.data, 'base64').toString();
-          context.req.body = JSON.parse(decoded);
-        } catch (error) {
-          throw new HttpError(400, 'Invalid Pub/Sub message');
-        }
+    const { method, body } = context.req;
+
+    if (['POST', 'PUT', 'PATCH'].includes(method)) {
+      if (typeof body === 'string') {
+        context.req.parsedBody = JSON.parse(body);
+      } else if (body?.message?.data) {
+        const decoded = Buffer.from(body.message.data, 'base64').toString();
+        context.req.body = JSON.parse(decoded);
       } else {
-        context.req.parsedBody = context.req.body;
+        context.req.parsedBody = body;
       }
     }
   },
@@ -31,7 +25,7 @@ export const bodyParser = (): BaseMiddleware => ({
 export const bodyValidator = (schema: z.ZodSchema): BaseMiddleware => ({
   before: async (context: Context): Promise<void> => {
     try {
-      context.req.validatedBody = await schema.parseAsync(context.req.parsedBody);
+      await schema.parseAsync(context.req.body);
     } catch (error) {
       if (error instanceof z.ZodError) {
         throw new HttpError(400, 'Validation error', JSON.stringify(error.errors));
@@ -92,15 +86,17 @@ export const pathParameters = (): BaseMiddleware => ({
   },
 });
 
-export const queryParameters = (requiredParams: string[] = []): BaseMiddleware => ({
+export const validatedQueryParameters = (schema: ZodSchema): BaseMiddleware => ({
   before: async (context: Context): Promise<void> => {
-    const url = new URL(context.req.url, `http://${context.req.headers.host}`);
-    context.req.query = Object.fromEntries(url.searchParams);
+    const queryParams = context.req.query;
 
-    for (const param of requiredParams) {
-      if (!context.req.query[param]) {
-        throw new HttpError(400, `Missing required query parameter: ${param}`);
+    try {
+      schema.parse(queryParams);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw new HttpError(400, 'Validation error', JSON.stringify(error.errors));
       }
+      throw error;
     }
   },
 });
@@ -121,27 +117,6 @@ export const errorHandler = (): BaseMiddleware => ({
       context.res.status(500).json({
         error: 'Internal Server Error',
       });
-    }
-  },
-});
-
-export const responseWrapper = (): BaseMiddleware => ({
-  before: async (context: Context): Promise<void> => {
-    const originalJson = context.res.json.bind(context.res);
-
-    context.res.json = (body: any): CustomResponse => {
-      return originalJson({
-        success: context.res.statusCode >= 200 && context.res.statusCode < 300,
-        statusCode: context.res.statusCode,
-        data: context.res.locals.responseBody,
-        timestamp: new Date().toISOString(),
-      });
-    };
-  },
-
-  after: async (context: Context): Promise<void> => {
-    if (!context.res.headersSent) {
-      context.res.json({ message: 'Request completed successfully' });
     }
   },
 });

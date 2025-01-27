@@ -7,13 +7,6 @@ export interface BaseMiddleware {
   onError?: (error: Error, context: Context) => Promise<void>;
 }
 
-// export interface BaseMiddleware {
-//   before?(context: Context): Promise<void>;
-//   after?(context: Context): Promise<void>;
-//   onError?(context: Context): Promise<void>;
-// }
-
-// handler.ts
 export class Handler {
   private BaseMiddlewares: BaseMiddleware[] = [];
   private handler!: (context: Context) => Promise<void>;

@@ -23,9 +23,3 @@ export interface Context {
   businessData: Map<string, unknown>;
   user?: unknown;
 }
-
-// export interface BaseMiddleware {
-//   before?(context: Context): Promise<void>;
-//   after?(context: Context): Promise<void>;
-//   onError?(context: Context): Promise<void>;
-// }

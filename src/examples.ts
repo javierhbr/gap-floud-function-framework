@@ -10,9 +10,8 @@ import {
   authentication,
   headerVariablesValidator,
   pathParameters,
-  queryParameters,
   errorHandler,
-  responseWrapper,
+  responseWrapperV2,
 } from './framework/middlewares';
 import { Handler } from './core/handler';
 
@@ -24,7 +23,7 @@ const helloWorldSchema = z.object({
 const helloWorldHandler = Handler.use(dependencyInjection())
   .use(bodyValidator(helloWorldSchema))
   .use(errorHandler())
-  .use(responseWrapper())
+  .use(responseWrapperV2<any>())
   .handle(async (context) => {
     logger.info('Hello logs!', { structuredData: true });
     const name = context.req.body?.name || 'World';
@@ -41,7 +40,7 @@ export const helloWorld = http('helloWorld', (req: Request, res: Response): Prom
 
 // Health check endpoint
 const healthCheckHandler = Handler.use(errorHandler())
-  .use(responseWrapper())
+  .use(responseWrapperV2<any>())
   .handle(async (context) => {
     context.res.json({
       status: 'healthy',
@@ -70,10 +69,9 @@ const createUserHandler = Handler.use(dependencyInjection())
   .use(authentication(verifyToken))
   .use(headerVariablesValidator(['content-type']))
   .use(pathParameters())
-  .use(queryParameters())
   .use(bodyValidator(userSchema))
   .use(errorHandler())
-  .use(responseWrapper())
+  .use(responseWrapperV2<any>())
   .handle(async (context) => {
     const { name, email } = context.req.body as { name: string; email: string };
     context.res.status(201).json({ name, email });

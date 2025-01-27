@@ -15,7 +15,7 @@ import {
   bodyValidator,
   errorHandler,
   pathParameters,
-  responseWrapper,
+  responseWrapperV2,
 } from '../framework/middlewares';
 import { verifyToken } from '../utils/auth';
 import { WeatherData } from './types';
@@ -41,7 +41,7 @@ export const weatherHandlerGet = new Handler()
   .use(authentication(verifyToken))
   .use(pathParameters())
   .use(new DateHeaderMiddleware())
-  .use(responseWrapper())
+  .use(responseWrapperV2<any>())
   .handle(async (context) => {
     const { id } = context.req.params;
     const weatherService = container.get(WeatherService);
@@ -59,7 +59,7 @@ export const weatherHandlerPost = new Handler()
   .use(bodyParser())
   .use(bodyValidator(weatherSchema))
   .use(new DateHeaderMiddleware())
-  .use(responseWrapper())
+  .use(responseWrapperV2<any>())
   .handle(async (context) => {
     const weatherService = container.get(WeatherService);
     const pubSubService = container.get(PubSubService);
@@ -94,7 +94,7 @@ export const weatherHandlerPut = new Handler()
   .use(bodyParser())
   .use(bodyValidator(weatherUpdateSchema))
   .use(new DateHeaderMiddleware())
-  .use(responseWrapper())
+  .use(responseWrapperV2<any>())
   .handle(async (context) => {
     const { id } = context.req.params;
     const weatherService = container.get(WeatherService);

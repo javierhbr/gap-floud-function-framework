@@ -10,10 +10,8 @@ import {
   dependencyInjection,
   errorHandler,
   headerVariablesValidator,
-  pathParameters,
-  queryParameters,
-  responseWrapper,
   responseWrapperV2,
+  validatedQueryParameters,
 } from './framework/middlewares';
 import { UserService } from './users/user.service';
 import { Context, CustomRequest, CustomResponse } from './framework/middlewares/base/Middleware';
@@ -47,7 +45,18 @@ export const pathParamValidator = (params: string[]): BaseMiddleware => ({
 
 // List users handler with query parameters
 const listUsersHandler = Handler.use(dependencyInjection())
-  .use(queryParameters())
+  // .use(queryParameters())
+  .use(
+    validatedQueryParameters(
+      z.object({
+        age: z.preprocess(
+          (val) => (val ? parseInt(val as string, 10) : undefined),
+          z.number().optional()
+        ),
+        active: z.preprocess((val) => (val ? val === 'true' : undefined), z.boolean().optional()),
+      })
+    )
+  )
   .use(errorHandler())
   .use(responseWrapperV2<any>())
   .handle(async (context) => {
@@ -71,8 +80,8 @@ const getUserHandler = Handler.use(dependencyInjection())
 
 // Create user handler
 const createUserHandler = Handler.use(dependencyInjection())
-  // .use(bodyValidator(createUserSchema))
-  // .use(headerVariablesValidator(['content-type']))
+  .use(bodyValidator(createUserSchema))
+  .use(headerVariablesValidator(['content-type']))
   .use(errorHandler())
   .use(responseWrapperV2<any>())
   .handle(async (context) => {
