@@ -1,7 +1,7 @@
-import { BaseMiddleware } from '../../core/handler';
-import { Context } from './base/Middleware';
+import { BaseMiddleware } from '../handler';
+import { Context } from '../core';
 import { z } from 'zod';
-import { HttpError } from '../../core/errors';
+import { ValidationError } from '../errors';
 
 export class BodyValidationMiddleware implements BaseMiddleware {
   constructor(private readonly schema: z.ZodSchema) {}
@@ -11,7 +11,7 @@ export class BodyValidationMiddleware implements BaseMiddleware {
       context.req.validatedBody = await this.schema.parseAsync(context.req.parsedBody);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new HttpError(400, 'Validation error', JSON.stringify(error.errors));
+        throw new ValidationError('Validation error', JSON.stringify(error.errors));
       }
       throw error;
     }

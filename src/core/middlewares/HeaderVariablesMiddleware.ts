@@ -1,5 +1,6 @@
-import { Context } from './base/Middleware';
-import { BaseMiddleware } from '../../core/handler';
+import { Context } from '../core';
+import { BaseMiddleware } from '../handler';
+import { ValidationError } from '../errors';
 
 export class HeaderVariablesMiddleware implements BaseMiddleware {
   constructor(private requiredHeaders: string[]) {}
@@ -9,7 +10,7 @@ export class HeaderVariablesMiddleware implements BaseMiddleware {
 
     for (const header of this.requiredHeaders) {
       if (!context.req.headers[header.toLowerCase()]) {
-        throw new Error(`Missing required header: ${header}`);
+        throw new ValidationError(`Missing required header: ${header}`);
       }
     }
   }

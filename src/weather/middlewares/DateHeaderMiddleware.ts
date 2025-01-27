@@ -1,5 +1,5 @@
 import { BaseMiddleware } from '../../core/handler';
-import { Context } from '../../framework/middlewares/base/Middleware';
+import { Context } from '../../core/core';
 
 export class DateHeaderMiddleware implements BaseMiddleware {
   async before(context: Context): Promise<void> {

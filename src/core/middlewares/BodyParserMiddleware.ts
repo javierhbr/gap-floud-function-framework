@@ -1,6 +1,6 @@
-import { BaseMiddleware } from '../../core/handler';
-import { Context } from './base/Middleware';
-import { HttpError } from '../../core/errors';
+import { BaseMiddleware } from '../handler';
+import { Context } from '../core';
+import { ValidationError } from '../errors';
 
 export class BodyParserMiddleware implements BaseMiddleware {
   async before(context: Context): Promise<void> {
@@ -8,7 +8,7 @@ export class BodyParserMiddleware implements BaseMiddleware {
       try {
         context.req.parsedBody = JSON.parse(context.req.body);
       } catch (error) {
-        throw new HttpError(400, 'Invalid JSON body');
+        throw new ValidationError('Invalid JSON body');
       }
     }
 
@@ -18,7 +18,7 @@ export class BodyParserMiddleware implements BaseMiddleware {
         const decoded = Buffer.from(context.req.body.message.data, 'base64').toString();
         context.req.parsedBody = JSON.parse(decoded);
       } catch (error) {
-        throw new HttpError(400, 'Invalid Pub/Sub message');
+        throw new ValidationError('Invalid Pub/Sub message');
       }
     }
   }

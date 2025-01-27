@@ -1,7 +1,7 @@
 import { Inject, Service } from 'typedi';
 import { UserQueryParams } from './http.types';
 import { HttpError } from '../core/errors';
-import { logger } from '../utils/logger';
+import { logger } from '../core/logger';
 
 @Service()
 export class UserService {

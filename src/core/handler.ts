@@ -1,5 +1,5 @@
 import Container from 'typedi';
-import { Context, CustomRequest, CustomResponse } from '../framework/middlewares/base/Middleware';
+import { Context, CustomRequest, CustomResponse } from './core';
 
 export interface BaseMiddleware {
   before?: (context: Context) => Promise<void>;

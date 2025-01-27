@@ -1,6 +1,6 @@
-import { BaseMiddleware } from '../../core/handler';
-import { Context } from './base/Middleware';
-import { HttpError } from '../../core/errors';
+import { BaseMiddleware } from '../handler';
+import { Context } from '../core';
+import { ValidationError } from '../errors';
 
 export class QueryParametersMiddleware implements BaseMiddleware {
   constructor(private readonly requiredParams: string[] = []) {}
@@ -11,7 +11,7 @@ export class QueryParametersMiddleware implements BaseMiddleware {
 
     for (const param of this.requiredParams) {
       if (!context.req.query[param]) {
-        throw new HttpError(400, `Missing required query parameter: ${param}`);
+        throw new ValidationError(`Missing required query parameter: ${param}`);
       }
     }
   }

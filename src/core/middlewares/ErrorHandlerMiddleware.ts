@@ -1,7 +1,7 @@
-import { BaseMiddleware } from '../../core/handler';
-import { Context } from './base/Middleware';
-import { HttpError } from '../../core/errors';
-import { logger } from '../../utils/logger';
+import { BaseMiddleware } from '../handler';
+import { Context } from '../core';
+import { HttpError } from '../errors';
+import { logger } from '../logger';
 
 export class ErrorHandlerMiddleware implements BaseMiddleware {
   async onError(error: Error, context: Context): Promise<void> {

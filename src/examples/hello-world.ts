@@ -1,9 +1,9 @@
 import { http, Request, Response } from '@google-cloud/functions-framework';
 import { z } from 'zod';
 import { Handler } from '../core/handler';
-import { ErrorHandlerMiddleware } from '../framework/middlewares/ErrorHandlerMiddleware';
-import { BodyValidationMiddleware } from '../framework/middlewares/BodyValidationMiddleware';
-import { ResponseWrapperMiddleware } from '../framework/middlewares/ResponseWrapperMiddleware';
+import { ErrorHandlerMiddleware } from '../core/middlewares/ErrorHandlerMiddleware';
+import { BodyValidationMiddleware } from '../core/middlewares/BodyValidationMiddleware';
+import { ResponseWrapperMiddleware } from '../core/middlewares/ResponseWrapperMiddleware';
 
 const requestSchema = z.object({
   name: z.string().min(1),

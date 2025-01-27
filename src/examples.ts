@@ -2,7 +2,7 @@ import * as functions from 'firebase-functions';
 import { http, Request, Response } from '@google-cloud/functions-framework';
 
 import { z } from 'zod';
-import { logger } from './utils/logger';
+import { logger } from './core/logger';
 import {
   bodyParser,
   bodyValidator,
@@ -12,7 +12,7 @@ import {
   pathParameters,
   errorHandler,
   responseWrapperV2,
-} from './framework/middlewares';
+} from './core/middlewares';
 import { Handler } from './core/handler';
 
 // Request schema validation

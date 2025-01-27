@@ -1,9 +1,9 @@
 import { z, ZodSchema } from 'zod';
 import { Container } from 'typedi';
-import { HttpError } from '../../core/errors';
-import { BaseMiddleware } from '../../core/handler';
-import { Context } from './base/Middleware';
-import { logger } from '../../utils/logger';
+import { AuthenticationError, HttpError, ValidationError } from '../errors';
+import { BaseMiddleware } from '../handler';
+import { Context } from '../core';
+import { logger } from '../logger';
 
 export const bodyParser = (): BaseMiddleware => ({
   before: async (context: Context): Promise<void> => {
@@ -28,7 +28,7 @@ export const bodyValidator = (schema: z.ZodSchema): BaseMiddleware => ({
       await schema.parseAsync(context.req.body);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new HttpError(400, 'Validation error', JSON.stringify(error.errors));
+        throw new ValidationError('Validation error', JSON.stringify(error.errors));
       }
       throw error;
     }
@@ -55,7 +55,7 @@ export const authentication = (
       const token = authHeader.split('Bearer ')[1];
       context.user = await verifyToken(token);
     } catch (error) {
-      throw new HttpError(401, 'Invalid authentication');
+      throw new AuthenticationError('Invalid authentication');
     }
   },
 });
@@ -64,7 +64,7 @@ export const headerVariablesValidator = (requiredHeaders: string[]): BaseMiddlew
   before: async (context: Context): Promise<void> => {
     for (const header of requiredHeaders) {
       if (!context.req.headers?.[header.toLowerCase()]) {
-        throw new HttpError(400, `Missing required header: ${header}`);
+        throw new ValidationError(`Missing required header: ${header}`);
       }
     }
   },
@@ -94,7 +94,7 @@ export const validatedQueryParameters = (schema: ZodSchema): BaseMiddleware => (
       schema.parse(queryParams);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new HttpError(400, 'Validation error', JSON.stringify(error.errors));
+        throw new ValidationError('Validation error', JSON.stringify(error.errors));
       }
       throw error;
     }

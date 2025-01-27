@@ -1,5 +1,5 @@
-import { BaseMiddleware } from '../../core/handler';
-import { Context } from './base/Middleware';
+import { BaseMiddleware } from '../handler';
+import { Context } from '../core';
 import { Response } from '@google-cloud/functions-framework';
 
 export class ResponseWrapperMiddleware implements BaseMiddleware {

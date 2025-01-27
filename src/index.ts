@@ -12,11 +12,11 @@ import {
   headerVariablesValidator,
   responseWrapperV2,
   validatedQueryParameters,
-} from './framework/middlewares';
+} from './core/middlewares';
 import { UserService } from './users/user.service';
-import { Context, CustomRequest, CustomResponse } from './framework/middlewares/base/Middleware';
+import { Context, CustomRequest, CustomResponse } from './core/core';
 import { HttpError } from './core/errors';
-import { logger } from './utils/logger';
+import { logger } from './core/logger';
 
 // Initialize container at cold start
 // const userService = Container.get(UserService);

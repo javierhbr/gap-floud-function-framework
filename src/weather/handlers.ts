@@ -10,15 +10,16 @@ import { Firestore } from '@google-cloud/firestore';
 import { PubSub } from '@google-cloud/pubsub';
 import { Handler } from '../core/handler';
 import {
-  authentication,
   bodyParser,
   bodyValidator,
   errorHandler,
   pathParameters,
   responseWrapperV2,
-} from '../framework/middlewares';
-import { verifyToken } from '../utils/auth';
+} from '../core/middlewares';
 import { WeatherData } from './types';
+import { verifyAuthTokenMiddleware } from '../core/middlewares/AuthenticationMiddleware';
+import { jwtTokenVerificationPort } from '../utils/auth';
+import { TokenPayload } from '../core/core';
 
 // Setup dependency injection
 const container = new ContainerInstance('weatherContainer');
@@ -38,7 +39,7 @@ container.set(
 // GET handler
 export const weatherHandlerGet = new Handler()
   .use(errorHandler())
-  .use(authentication(verifyToken))
+  .use(verifyAuthTokenMiddleware<TokenPayload>(jwtTokenVerificationPort))
   .use(pathParameters())
   .use(new DateHeaderMiddleware())
   .use(responseWrapperV2<any>())
@@ -55,7 +56,7 @@ export const weatherHandlerGet = new Handler()
 // POST handler
 export const weatherHandlerPost = new Handler()
   .use(errorHandler())
-  .use(authentication(verifyToken))
+  .use(verifyAuthTokenMiddleware<TokenPayload>(jwtTokenVerificationPort))
   .use(bodyParser())
   .use(bodyValidator(weatherSchema))
   .use(new DateHeaderMiddleware())
@@ -89,7 +90,7 @@ export const weatherHandlerPost = new Handler()
 // PUT handler
 export const weatherHandlerPut = new Handler()
   .use(errorHandler())
-  .use(authentication(verifyToken))
+  .use(verifyAuthTokenMiddleware<TokenPayload>(jwtTokenVerificationPort))
   .use(pathParameters())
   .use(bodyParser())
   .use(bodyValidator(weatherUpdateSchema))
