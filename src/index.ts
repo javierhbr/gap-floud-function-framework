@@ -18,10 +18,6 @@ import { Context, CustomRequest, CustomResponse } from './core/core';
 import { HttpError } from './core/errors';
 import { logger } from './core/logger';
 
-// Initialize container at cold start
-// const userService = Container.get(UserService);
-
-// const businessData = new Map<string, any>();
 Container.set('businessData', new Map<string, any>());
 
 const app = express();
