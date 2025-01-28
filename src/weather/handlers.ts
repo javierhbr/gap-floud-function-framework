@@ -17,7 +17,7 @@ import {
   responseWrapperV2,
 } from '../core/middlewares';
 import { WeatherData } from './types';
-import { verifyAuthTokenMiddleware } from '../core/middlewares/AuthenticationMiddleware';
+import { verifyAuthTokenMiddleware } from '../core/middlewares/authenticationMiddleware';
 import { jwtTokenVerificationPort } from '../utils/auth';
 import { TokenPayload } from '../core/core';
 

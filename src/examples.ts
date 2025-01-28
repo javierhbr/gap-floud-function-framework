@@ -7,13 +7,14 @@ import {
   bodyParser,
   bodyValidator,
   dependencyInjection,
-  authentication,
   headerVariablesValidator,
   pathParameters,
   errorHandler,
-  responseWrapperV2,
+  responseWrapperV2, verifyAuthTokenMiddleware
 } from './core/middlewares';
 import { Handler } from './core/handler';
+import { TokenPayload } from './core';
+import { jwtTokenVerificationPort } from './utils/auth';
 
 // Request schema validation
 const helloWorldSchema = z.object({
@@ -58,15 +59,10 @@ const userSchema = z.object({
   email: z.string().email(),
 });
 
-const verifyToken = async (_token: string): Promise<unknown> => {
-  // Implement your token verification logic
-  return { userId: '123' };
-};
-
 // Create handler
 const createUserHandler = Handler.use(dependencyInjection())
   .use(bodyParser())
-  .use(authentication(verifyToken))
+  .use(verifyAuthTokenMiddleware<TokenPayload>(jwtTokenVerificationPort))
   .use(headerVariablesValidator(['content-type']))
   .use(pathParameters())
   .use(bodyValidator(userSchema))

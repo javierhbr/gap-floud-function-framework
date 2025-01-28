@@ -57,3 +57,27 @@ export const verifyAuthTokenMiddleware = <T>(
     }
   },
 });
+
+
+
+/*
+// Example protected endpoint
+const protectedHandler = Handler.use(verifyAuthTokenMiddleware(customTokenVerificationPort))
+  .use(errorHandler())
+  .use(responseWrapperV2<any>())
+  .handle(async (context: Context) => {
+    const user = context.user;
+    context.res.json({
+      message: 'Protected endpoint',
+      user,
+    });
+  });
+
+const app = express();
+app.use(express.json());
+
+app.get('/protected', (req, res) =>
+  protectedHandler.execute(req as unknown as CustomRequest, res as unknown as CustomResponse)
+);
+
+export default app;*/

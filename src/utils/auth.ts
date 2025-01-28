@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { CustomTokenVerificationPort } from '../core/middlewares/AuthenticationMiddleware';
+import { CustomTokenVerificationPort } from '../core/middlewares/authenticationMiddleware';
 
 interface TokenPayload {
   userId: string;

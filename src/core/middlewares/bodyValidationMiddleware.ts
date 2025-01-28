@@ -17,3 +17,16 @@ export class BodyValidationMiddleware implements BaseMiddleware {
     }
   }
 }
+
+export const bodyValidator = (schema: z.ZodSchema): BaseMiddleware => ({
+  before: async (context: Context): Promise<void> => {
+    try {
+      await schema.parseAsync(context.req.body);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        throw new ValidationError('Validation error', JSON.stringify(error.errors));
+      }
+      throw error;
+    }
+  },
+});

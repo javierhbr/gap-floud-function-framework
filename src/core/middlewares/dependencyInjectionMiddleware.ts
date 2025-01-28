@@ -13,6 +13,12 @@ export class DependencyInjectionMiddleware implements BaseMiddleware {
   }
 }
 
+export const dependencyInjection = (): BaseMiddleware => ({
+  before: async (context: Context): Promise<void> => {
+    context.container = Container.of();
+  },
+});
+
 /*
 // Initialize services
 const services = [

@@ -23,3 +23,20 @@ export class BodyParserMiddleware implements BaseMiddleware {
     }
   }
 }
+
+export const bodyParser = (): BaseMiddleware => ({
+  before: async (context: Context): Promise<void> => {
+    const { method, body } = context.req;
+
+    if (['POST', 'PUT', 'PATCH'].includes(method)) {
+      if (typeof body === 'string') {
+        context.req.parsedBody = JSON.parse(body);
+      } else if (body?.message?.data) {
+        const decoded = Buffer.from(body.message.data, 'base64').toString();
+        context.req.body = JSON.parse(decoded);
+      } else {
+        context.req.parsedBody = body;
+      }
+    }
+  },
+});
