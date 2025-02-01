@@ -14,7 +14,11 @@ export class UserService {
   async listUsers(queryParams: UserQueryParams): Promise<any[]> {
     const users = Array.from(this.usersList.values()).filter((user) => {
       if (queryParams.age && user.age !== queryParams.age) return false;
-      if (queryParams.active !== undefined && user.active !== queryParams.active) return false;
+      if (
+        queryParams.active !== undefined &&
+        user.active !== queryParams.active
+      )
+        return false;
       return true;
     });
     return users;
@@ -23,9 +27,12 @@ export class UserService {
   async createUser(userData: any): Promise<any> {
     const userId = Math.random().toString(36).substr(2, 9);
     const user = { ...userData, id: userId };
-    logger.info(`Creating user user_${userId}`);
+    logger.info(`Creating user user_${userId} `);
     this.usersList.set(`user_${userId}`, user);
-    logger.info(`checking user ${JSON.stringify(this.usersList.get(`user_${userId}`))}`);
+    this.businessData.set(`user_${userId}`, user);
+    logger.info(
+      `checking user ${JSON.stringify(this.usersList.get(`user_${userId}`))}`
+    );
     return user;
   }
 

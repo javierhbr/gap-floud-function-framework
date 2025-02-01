@@ -8,10 +8,15 @@ export class BodyValidationMiddleware implements BaseMiddleware {
 
   async before(context: Context): Promise<void> {
     try {
-      context.req.validatedBody = await this.schema.parseAsync(context.req.parsedBody);
+      context.req.validatedBody = await this.schema.parseAsync(
+        context.req.parsedBody
+      );
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new ValidationError('Validation error', JSON.stringify(error.errors));
+        throw new ValidationError(
+          'Validation error',
+          JSON.stringify(error.errors)
+        );
       }
       throw error;
     }
@@ -24,7 +29,10 @@ export const bodyValidator = (schema: z.ZodSchema): BaseMiddleware => ({
       await schema.parseAsync(context.req.body);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new ValidationError('Validation error', JSON.stringify(error.errors));
+        throw new ValidationError(
+          'Validation error',
+          JSON.stringify(error.errors)
+        );
       }
       throw error;
     }

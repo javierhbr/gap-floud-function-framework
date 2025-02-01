@@ -324,3 +324,57 @@ curl http://localhost:8080/api/users | ConvertFrom-Json | ConvertTo-Json
 # Unix/Linux/MacOS
 curl http://localhost:8080/api/users | json_pp 
 ```
+
+
+## DEployment
+
+url: https://us-central1-javierhbr-lab.cloudfunctions.net/userApi
+
+
+
+gcloud endpoints services deploy openapi.yaml --project [PROJECT_ID]
+
+```
+export GCP_REGION=us-central1
+export GCP_PROJECT_ID=javierhbr-lab
+
+❯ chmod u+rw ./openapi/user-api-spec.yaml
+
+
+./openapi/user-api-spec.yaml
+
+
+  --backend-auth-service-account=${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+to change the openAPI. it's need to be updated in the openapi.yaml file and then create a new version of it
+
+gcloud api-gateway api-configs create gtw-user-api-config-v1-2  \
+	--api=user-api \
+	--openapi-spec=swagger.yaml
+	
+
+[//]: # (--backend-auth-service-account=sa-javierhbr-lab@javierhbr-lab.iam.gserviceaccount.com)
+
+CReate a new gateways with api config 
+
+gcloud api-gateway gateways create gtw-user-api \
+    --api=user-api \
+    --api-config=gtw-user-api-config \
+    --location=us-central1 \
+    --project=javierhbr-lab
+
+Update the gateway with the new api config
+gcloud api-gateway gateways update gtw-user-api \
+    --api=user-api \
+    --api-config=gtw-user-api-config-v1-2 \
+    --location=us-central1 \
+    --project=javierhbr-lab
+
+    
+        
+gcloud api-gateway apis describe user-api --project=my-project
+
+gcloud api-gateway gateways describe gtw-user-api --location=us-central1 --project=my-project
+
+
+```

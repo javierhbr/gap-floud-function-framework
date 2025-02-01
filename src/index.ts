@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-import * as functions from '@google-cloud/functions-framework';
 import express from 'express';
 import { Container } from 'typedi';
 import { z } from 'zod';
@@ -17,6 +16,7 @@ import { UserService } from './users/user.service';
 import { Context, CustomRequest, CustomResponse } from './core/core';
 import { HttpError } from './core/errors';
 import { logger } from './core/logger';
+import { onRequest } from 'firebase-functions/https';
 
 Container.set('businessData', new Map<string, any>());
 
@@ -34,14 +34,16 @@ export const pathParamValidator = (params: string[]): BaseMiddleware => ({
   before: async (context: Context) => {
     const missingParams = params.filter((param) => !context.req.params[param]);
     if (missingParams.length > 0) {
-      throw new HttpError(400, `Missing path parameters: ${missingParams.join(', ')}`);
+      throw new HttpError(
+        400,
+        `Missing path parameters: ${missingParams.join(', ')}`
+      );
     }
   },
 });
 
 // List users handler with query parameters
 const listUsersHandler = Handler.use(dependencyInjection())
-  // .use(queryParameters())
   .use(
     validatedQueryParameters(
       z.object({
@@ -49,7 +51,10 @@ const listUsersHandler = Handler.use(dependencyInjection())
           (val) => (val ? parseInt(val as string, 10) : undefined),
           z.number().optional()
         ),
-        active: z.preprocess((val) => (val ? val === 'true' : undefined), z.boolean().optional()),
+        active: z.preprocess(
+          (val) => (val ? val === 'true' : undefined),
+          z.boolean().optional()
+        ),
       })
     )
   )
@@ -64,7 +69,6 @@ const listUsersHandler = Handler.use(dependencyInjection())
 // Get user by ID handler with path parameter
 const getUserHandler = Handler.use(dependencyInjection())
   .use(pathParamValidator(['userId']))
-  // .use(pathParameters())
   .use(errorHandler())
   .use(responseWrapperV2<any>())
   .handle(async (context: Context) => {
@@ -97,18 +101,31 @@ const healthCheckHandler = Handler.use(errorHandler())
   });
 
 // Route definitions
-
 app.get('/api/users', (req, res) =>
-  listUsersHandler.execute(req as unknown as CustomRequest, res as unknown as CustomResponse)
+  listUsersHandler.execute(
+    req as unknown as CustomRequest,
+    res as unknown as CustomResponse
+  )
 );
 app.get('/api/users/:userId', (req, res) =>
-  getUserHandler.execute(req as unknown as CustomRequest, res as unknown as CustomResponse)
+  getUserHandler.execute(
+    req as unknown as CustomRequest,
+    res as unknown as CustomResponse
+  )
 );
 app.post('/api/users', (req, res) =>
-  createUserHandler.execute(req as unknown as CustomRequest, res as unknown as CustomResponse)
+  createUserHandler.execute(
+    req as unknown as CustomRequest,
+    res as unknown as CustomResponse
+  )
 );
 app.get('/health', (req, res) =>
-  healthCheckHandler.execute(req as unknown as CustomRequest, res as unknown as CustomResponse)
+  healthCheckHandler.execute(
+    req as unknown as CustomRequest,
+    res as unknown as CustomResponse
+  )
 );
+
 // Export the function
-exports.userApi = functions.http('userApi', app);
+// exports.userApi = functions.http('userApi', app);
+exports.userApi = onRequest(app);

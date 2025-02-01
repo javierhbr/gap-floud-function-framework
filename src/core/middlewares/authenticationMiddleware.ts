@@ -47,7 +47,6 @@ export const verifyAuthTokenMiddleware = <T>(
   },
 });
 
-
 /*
 // Example protected endpoint
 const protectedHandler = Handler.use(verifyAuthTokenMiddleware(customTokenVerificationPort))

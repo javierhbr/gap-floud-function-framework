@@ -10,7 +10,8 @@ import {
   headerVariablesValidator,
   pathParameters,
   errorHandler,
-  responseWrapperV2, verifyAuthTokenMiddleware
+  responseWrapperV2,
+  verifyAuthTokenMiddleware,
 } from './core/middlewares';
 import { Handler } from './core/handler';
 import { TokenPayload } from './core';
@@ -35,9 +36,12 @@ const helloWorldHandler = Handler.use(dependencyInjection())
   });
 
 // Hello World endpoint
-export const helloWorld = http('helloWorld', (req: Request, res: Response): Promise<void> => {
-  return helloWorldHandler.execute(req, res);
-});
+export const helloWorld = http(
+  'helloWorld',
+  (req: Request, res: Response): Promise<void> => {
+    return helloWorldHandler.execute(req, res);
+  }
+);
 
 // Health check endpoint
 const healthCheckHandler = Handler.use(errorHandler())
@@ -49,9 +53,12 @@ const healthCheckHandler = Handler.use(errorHandler())
     });
   });
 
-export const healthCheck = http('healthCheck', (req: Request, res: Response): Promise<void> => {
-  return healthCheckHandler.execute(req, res);
-});
+export const healthCheck = http(
+  'healthCheck',
+  (req: Request, res: Response): Promise<void> => {
+    return healthCheckHandler.execute(req, res);
+  }
+);
 
 // Example protected endpoint
 const userSchema = z.object({
@@ -73,9 +80,12 @@ const createUserHandler = Handler.use(dependencyInjection())
     context.res.status(201).json({ name, email });
   });
 
-export const createUser = http('createUser', (req: Request, res: Response): Promise<void> => {
-  return createUserHandler.execute(req, res);
-});
+export const createUser = http(
+  'createUser',
+  (req: Request, res: Response): Promise<void> => {
+    return createUserHandler.execute(req, res);
+  }
+);
 
 export const helloWorldV2 = functions.https.onRequest((req, res) => {
   logger.info(JSON.stringify(req.params));
@@ -92,7 +102,9 @@ export const helloWorldV2 = functions.https.onRequest((req, res) => {
     const { name, lastName } = req.body;
 
     if (!name || !lastName) {
-      res.status(400).send({ error: 'Missing name or lastname in request body' });
+      res
+        .status(400)
+        .send({ error: 'Missing name or lastname in request body' });
       return;
     }
 

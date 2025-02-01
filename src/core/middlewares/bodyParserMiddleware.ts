@@ -15,7 +15,10 @@ export class BodyParserMiddleware implements BaseMiddleware {
     // Handle Pub/Sub messages
     if (context.req.body?.message?.data) {
       try {
-        const decoded = Buffer.from(context.req.body.message.data, 'base64').toString();
+        const decoded = Buffer.from(
+          context.req.body.message.data,
+          'base64'
+        ).toString();
         context.req.parsedBody = JSON.parse(decoded);
       } catch (error) {
         throw new ValidationError('Invalid Pub/Sub message');

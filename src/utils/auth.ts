@@ -7,10 +7,11 @@ interface TokenPayload {
   role?: string;
 }
 
-export const jwtTokenVerificationPort: CustomTokenVerificationPort<TokenPayload> = {
-  async verifyToken(token: string): Promise<TokenPayload> {
-    const secret = process.env.JWT_SECRET || 'your-secret-key';
-    const decoded = jwt.verify(token, secret) as TokenPayload;
-    return decoded;
-  },
-};
+export const jwtTokenVerificationPort: CustomTokenVerificationPort<TokenPayload> =
+  {
+    async verifyToken(token: string): Promise<TokenPayload> {
+      const secret = process.env.JWT_SECRET || 'your-secret-key';
+      const decoded = jwt.verify(token, secret) as TokenPayload;
+      return decoded;
+    },
+  };

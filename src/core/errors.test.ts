@@ -3,7 +3,9 @@ import { HttpError, ValidationError, AuthenticationError } from './errors';
 
 describe('HttpError', () => {
   it('creates an instance with status, message, code, and details', () => {
-    const error = new HttpError(404, 'Not Found', 'NOT_FOUND', { resource: 'User' });
+    const error = new HttpError(404, 'Not Found', 'NOT_FOUND', {
+      resource: 'User',
+    });
     expect(error.status).toBe(404);
     expect(error.message).toBe('Not Found');
     expect(error.code).toBe('NOT_FOUND');

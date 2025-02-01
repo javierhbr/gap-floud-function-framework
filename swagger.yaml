@@ -1,0 +1,136 @@
+swagger: "2.0"
+info:
+  title: "User Management API"
+  description: "API for managing user operations"
+  version: "1.0.0"
+
+# Required for Swagger 2.0:
+host: "us-central1-javierhbr-lab.cloudfunctions.net"
+basePath: /userApi
+schemes:
+  - https
+
+# Google Cloud API Gateway-specific extensions:
+x-google-endpoints:
+  - name: "us-central1-javierhbr-lab.cloudfunctions.net"
+    target: "us-central1-javierhbr-lab.cloudfunctions.net"
+
+x-google-backend:
+  address: "https://us-central1-javierhbr-lab.cloudfunctions.net"
+
+paths:
+  /api/users:
+    get:
+      summary: "List users"
+      operationId: listUsers
+      parameters:
+        - name: age
+          in: query
+          type: integer
+          description: "Filter users by age"
+        - name: active
+          in: query
+          type: boolean
+          description: "Filter by active status"
+      responses:
+        "200":
+          description: "Successful response"
+          schema:
+            $ref: "#/definitions/UserList"
+
+    post:
+      summary: "Create user"
+      operationId: createUser
+      parameters:
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/CreateUserRequest"
+      responses:
+        "201":
+          description: "User created"
+          schema:
+            $ref: "#/definitions/User"
+
+  /users/{userId}:
+    get:
+      summary: "Get user by ID"
+      operationId: getUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "User found"
+          schema:
+            $ref: "#/definitions/User"
+
+    put:
+      summary: "Update user"
+      operationId: updateUser
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          type: string
+        - in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/UpdateUserRequest"
+      responses:
+        "200":
+          description: "User updated"
+          schema:
+            $ref: "#/definitions/User"
+
+definitions:
+  User:
+    type: object
+    required:
+      - id
+      - name
+      - email
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      email:
+        type: string
+      age:
+        type: integer
+
+  CreateUserRequest:
+    type: object
+    required:
+      - name
+      - email
+    properties:
+      name:
+        type: string
+      email:
+        type: string
+      age:
+        type: integer
+
+  UpdateUserRequest:
+    type: object
+    properties:
+      name:
+        type: string
+      email:
+        type: string
+      age:
+        type: integer
+
+  UserList:
+    type: object
+    properties:
+      users:
+        type: array
+        items:
+          $ref: "#/definitions/User"

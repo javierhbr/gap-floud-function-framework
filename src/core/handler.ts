@@ -8,17 +8,17 @@ export interface BaseMiddleware {
 }
 
 export class Handler {
-  private BaseMiddlewares: BaseMiddleware[] = [];
+  private baseMiddlewares: BaseMiddleware[] = [];
   private handler!: (context: Context) => Promise<void>;
 
   static use(BaseMiddleware: BaseMiddleware): Handler {
     const handler = new Handler();
-    handler.BaseMiddlewares.push(BaseMiddleware);
+    handler.baseMiddlewares.push(BaseMiddleware);
     return handler;
   }
 
   use(BaseMiddleware: BaseMiddleware): Handler {
-    this.BaseMiddlewares.push(BaseMiddleware);
+    this.baseMiddlewares.push(BaseMiddleware);
     return this;
   }
 
@@ -37,8 +37,8 @@ export class Handler {
     };
 
     try {
-      // Execute before BaseMiddlewares
-      for (const BaseMiddleware of this.BaseMiddlewares) {
+      // Execute before baseMiddlewares
+      for (const BaseMiddleware of this.baseMiddlewares) {
         if (BaseMiddleware.before) {
           await BaseMiddleware.before(context);
         }
@@ -46,13 +46,13 @@ export class Handler {
 
       await this.handler(context);
 
-      for (const BaseMiddleware of [...this.BaseMiddlewares].reverse()) {
+      for (const BaseMiddleware of [...this.baseMiddlewares].reverse()) {
         if (BaseMiddleware.after) {
           await BaseMiddleware.after(context);
         }
       }
     } catch (error) {
-      for (const BaseMiddleware of [...this.BaseMiddlewares].reverse()) {
+      for (const BaseMiddleware of [...this.baseMiddlewares].reverse()) {
         if (BaseMiddleware.onError) {
           await BaseMiddleware.onError(error as Error, context);
         }

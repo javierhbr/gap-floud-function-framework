@@ -28,12 +28,21 @@ container.set(PubSub, new PubSub());
 container.set(WeatherService, new WeatherService(container.get(Firestore)));
 container.set(
   WeatherApiService,
-  new WeatherApiService(process.env.WEATHER_API_KEY!, process.env.WEATHER_API_URL!)
+  new WeatherApiService(
+    process.env.WEATHER_API_KEY!,
+    process.env.WEATHER_API_URL!
+  )
 );
-container.set(PubSubService, new PubSubService(container.get(PubSub), 'high-temperature-topic'));
+container.set(
+  PubSubService,
+  new PubSubService(container.get(PubSub), 'high-temperature-topic')
+);
 container.set(
   WeatherValidation,
-  new WeatherValidation(container.get(WeatherService), container.get(WeatherApiService))
+  new WeatherValidation(
+    container.get(WeatherService),
+    container.get(WeatherApiService)
+  )
 );
 
 // GET handler

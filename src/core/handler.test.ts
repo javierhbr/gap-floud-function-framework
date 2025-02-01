@@ -1,23 +1,13 @@
-// src/core/handler.spec.ts
 import { Handler } from './handler';
 import { Context, CustomRequest, CustomResponse } from './core';
-import Container from 'typedi';
 
 describe('Handler', () => {
   let req: CustomRequest;
   let res: CustomResponse;
-  let context: Context;
 
   beforeEach(() => {
     req = {} as CustomRequest;
     res = {} as CustomResponse;
-    context = {
-      container: Container.of(),
-      req,
-      res,
-      error: null,
-      businessData: new Map(),
-    };
   });
 
   it('executes handler successfully', async () => {
@@ -65,7 +55,10 @@ describe('Handler', () => {
     });
 
     await handler.execute(req, res);
-    expect(onErrorMiddleware).toHaveBeenCalledWith(expect.any(Error), expect.any(Object));
+    expect(onErrorMiddleware).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.any(Object)
+    );
   });
 
   it('executes all middlewares in order', async () => {
@@ -98,7 +91,10 @@ describe('Handler', () => {
     });
 
     await handler.execute(req, res);
-    expect(onErrorMiddleware).toHaveBeenCalledWith(expect.any(Error), expect.any(Object));
+    expect(onErrorMiddleware).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.any(Object)
+    );
   });
 
   it('handles error thrown in after middleware', async () => {
@@ -113,14 +109,17 @@ describe('Handler', () => {
     });
 
     await handler.execute(req, res);
-    expect(onErrorMiddleware).toHaveBeenCalledWith(expect.any(Error), expect.any(Object));
+    expect(onErrorMiddleware).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.any(Object)
+    );
   });
 
   it('adds middleware using use method', () => {
     const middleware = { before: jest.fn() };
-    const handler = new Handler().use(middleware);
+    const handler: Handler = new Handler().use(middleware);
 
     expect(handler).toBeInstanceOf(Handler);
-    expect((handler as any).BaseMiddlewares).toContain(middleware);
+    expect((handler as any).baseMiddlewares).toContain(middleware);
   });
 });

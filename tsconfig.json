@@ -1,26 +1,37 @@
 {
   "compilerOptions": {
+    "module": "NodeNext",
+    "esModuleInterop": true,
+    "moduleResolution": "nodenext",
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "sourceMap": true,
+    "strict": true,
     "target": "ES2022",
-    "module": "commonjs",
-    "types": ["node", "jest"],
-    "lib": ["ES2022"],
+    "types": [
+      "node",
+      "jest"
+    ],
+    "lib": [
+      "ES2022"
+    ],
     "outDir": "build",
     "rootDir": "./src",
-    "strict": true,
-    "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
-    "baseUrl": ".",
-
+    "baseUrl": "."
   },
-  "include": ["src", "lib"],
-  "exclude": ["node_modules", "dist", "**/*.test.ts"],
-
+  "include": [
+    "./src"
+  ],
+  "exclude": [
+    "node_modules",
+    "build",
+    "**/*.test.ts"
+  ]
 }

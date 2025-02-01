@@ -30,7 +30,12 @@ app.get('/api/users', (req: Request, res: Response) => {
   // Here you would typically query your database
   // This is just an example response
   const users: User[] = [
-    { id: '1', name: 'John Doe', email: 'john@example.com', age: Number(age) || 30 },
+    {
+      id: '1',
+      name: 'John Doe',
+      email: 'john@example.com',
+      age: Number(age) || 30,
+    },
   ];
 
   res.status(200).json({
@@ -82,7 +87,7 @@ app.post('/api/users', (req: Request, res: Response) => {
     id: Math.random().toString(36).substring(7),
   };
 
-  res.status(201).json({
+  return res.status(201).json({
     success: true,
     data: createdUser,
   });

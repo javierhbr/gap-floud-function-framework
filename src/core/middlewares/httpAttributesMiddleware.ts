@@ -37,7 +37,9 @@ export const pathParameters = (): BaseMiddleware => ({
   },
 });
 
-export const headerVariablesValidator = (requiredHeaders: string[]): BaseMiddleware => ({
+export const headerVariablesValidator = (
+  requiredHeaders: string[]
+): BaseMiddleware => ({
   before: async (context: Context): Promise<void> => {
     for (const header of requiredHeaders) {
       if (!context.req.headers?.[header.toLowerCase()]) {
@@ -47,7 +49,9 @@ export const headerVariablesValidator = (requiredHeaders: string[]): BaseMiddlew
   },
 });
 
-export const validatedQueryParameters = (schema: ZodSchema): BaseMiddleware => ({
+export const validatedQueryParameters = (
+  schema: ZodSchema
+): BaseMiddleware => ({
   before: async (context: Context): Promise<void> => {
     const queryParams = context.req.query;
 
@@ -55,7 +59,10 @@ export const validatedQueryParameters = (schema: ZodSchema): BaseMiddleware => (
       schema.parse(queryParams);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new ValidationError('Validation error', JSON.stringify(error.errors));
+        throw new ValidationError(
+          'Validation error',
+          JSON.stringify(error.errors)
+        );
       }
       throw error;
     }

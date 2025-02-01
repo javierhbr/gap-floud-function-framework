@@ -19,6 +19,9 @@ const helloWorldHandler = Handler.use(new ErrorHandlerMiddleware())
     });
   });
 
-export const helloWorld = http('helloWorld', (req: Request, res: Response): Promise<void> => {
-  return helloWorldHandler.execute(req, res);
-});
+export const helloWorld = http(
+  'helloWorld',
+  (req: Request, res: Response): Promise<void> => {
+    return helloWorldHandler.execute(req, res);
+  }
+);

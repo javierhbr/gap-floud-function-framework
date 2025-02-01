@@ -2,28 +2,31 @@
   "name": "cloud-functions-framework",
   "version": "1.0.0",
   "description": "Google Cloud Functions Framework with TypeScript",
-  "main": "build/index.js",
+  "main": "index.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && cp package.json build/",
     "watch": "tsc -w",
-    "start:api:userApi": "npm run build && functions-framework --target=userApi",
-    "start`": "functions-framework --target=helloWorld --source=build/",
+    "start:api:userApi": "npm run build && functions-framework --target=userApi --source=build",
+    "start": "functions-framework --target=helloWorld --source=build/",
     "shell": "npm run build && firebase functions:shell --project javierhbr-lab",
     "dev": "concurrently \"npm run watch\" \"npm run start\"",
     "serve-test": "npm run build && firebase emulators:start --only functions --project javierhbr-lab",
     "shell-test-old": "npm run build && firebase functions:shell --project javierhbr-lab",
     "shell-test": "npm run build && firebase functions:shell --project javierhbr-lab",
     "start-test": "npm run shell-test --project javierhbr-lab",
+    "deploy:firebase": "firebase deploy",
     "deploy": "gcloud functions deploy helloWorld --runtime nodejs20 --trigger-http --allow-unauthenticated",
     "deploy:hello": "gcloud functions deploy helloWorld --runtime nodejs20 --trigger-http --allow-unauthenticated",
     "deploy:health": "gcloud functions deploy healthCheck --runtime nodejs20 --trigger-http --allow-unauthenticated",
     "deploy:create-user": "gcloud functions deploy createUser --runtime nodejs20 --trigger-http --allow-unauthenticated",
+    "deploy:userApi": "gcloud functions deploy userApi --runtime nodejs20 --trigger-http --allow-unauthenticated",
     "test": "jest --config jest.config.js",
     "test:coverage": "jest --config jest.config.js --coverage",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write \"src/**/*.{ts,js,json}\"",
-    "format:check": "prettier --check \"src/**/*.{ts,js,json}\""
+    "format:check": "prettier --check \"src/**/*.{ts,js,json}\"",
+    "logs": "firebase functions:log"
   },
   "engines": {
     "node": "20"
@@ -36,7 +39,7 @@
     "axios": "^1.7.9",
     "express": "^4.18.2",
     "firebase-admin": "^12.6.0",
-    "firebase-functions": "^6.0.1",
+    "firebase-functions": "^6.3.1",
     "jsonwebtoken": "^9.0.2",
     "reflect-metadata": "^0.2.2",
     "typedi": "^0.10.0",
@@ -59,5 +62,6 @@
     "prettier": "^3.1.1",
     "ts-jest": "^29.1.1",
     "typescript": "^5.3.3"
-  }
+  },
+  "private": true
 }

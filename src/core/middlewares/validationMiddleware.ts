@@ -8,7 +8,10 @@ export class ValidationMiddleware implements BaseMiddleware {
 
   async before(context: Context): Promise<void> {
     try {
-      const data = context.req.method === 'GET' ? context.req.query : context.req.parsedBody;
+      const data =
+        context.req.method === 'GET'
+          ? context.req.query
+          : context.req.parsedBody;
       const validated = await this.schema.parseAsync(data);
 
       if (context.req.method === 'GET') {
@@ -18,7 +21,10 @@ export class ValidationMiddleware implements BaseMiddleware {
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
-        throw new ValidationError('Validation error', JSON.stringify(error.errors));
+        throw new ValidationError(
+          'Validation error',
+          JSON.stringify(error.errors)
+        );
       }
       throw error;
     }

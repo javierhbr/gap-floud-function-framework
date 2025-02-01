@@ -2,7 +2,7 @@
 import {
   AuthenticationMiddleware,
   CustomTokenVerificationPort,
-  verifyAuthTokenMiddleware
+  verifyAuthTokenMiddleware,
 } from './authenticationMiddleware';
 import { Context } from '../core';
 import { AuthenticationError, HttpError } from '../errors';
@@ -26,15 +26,21 @@ describe('AuthenticationMiddleware', () => {
     const middleware = new AuthenticationMiddleware(tokenVerificationPort);
 
     await expect(middleware.before(context)).rejects.toThrow(HttpError);
-    await expect(middleware.before(context)).rejects.toThrow('No authorization header');
+    await expect(middleware.before(context)).rejects.toThrow(
+      'No authorization header'
+    );
   });
 
   it('throws AuthenticationError if token format is invalid', async () => {
     context.req.headers.authorization = 'InvalidTokenFormat';
     const middleware = new AuthenticationMiddleware(tokenVerificationPort);
 
-    await expect(middleware.before(context)).rejects.toThrow(AuthenticationError);
-    await expect(middleware.before(context)).rejects.toThrow('Invalid token format');
+    await expect(middleware.before(context)).rejects.toThrow(
+      AuthenticationError
+    );
+    await expect(middleware.before(context)).rejects.toThrow(
+      'Invalid token format'
+    );
   });
 
   it('sets context.user if token is valid', async () => {
@@ -49,12 +55,18 @@ describe('AuthenticationMiddleware', () => {
   });
 
   it('throws AuthenticationError if token verification fails', async () => {
-    tokenVerificationPort.verifyToken = jest.fn().mockRejectedValue(new Error('Invalid token'));
+    tokenVerificationPort.verifyToken = jest
+      .fn()
+      .mockRejectedValue(new Error('Invalid token'));
     context.req.headers.authorization = 'Bearer invalidToken';
     const middleware = new AuthenticationMiddleware(tokenVerificationPort);
 
-    await expect(middleware.before(context)).rejects.toThrow(AuthenticationError);
-    await expect(middleware.before(context)).rejects.toThrow('Invalid authentication');
+    await expect(middleware.before(context)).rejects.toThrow(
+      AuthenticationError
+    );
+    await expect(middleware.before(context)).rejects.toThrow(
+      'Invalid authentication'
+    );
   });
 
   it('rethrows HttpError if token verification throws HttpError', async () => {
@@ -67,7 +79,6 @@ describe('AuthenticationMiddleware', () => {
     await expect(middleware.before(context)).rejects.toThrow('Forbidden');
   });
 });
-
 
 describe('verifyAuthTokenMiddleware', () => {
   let context: Context;
@@ -89,7 +100,9 @@ describe('verifyAuthTokenMiddleware', () => {
 
     if (middleware.before) {
       await expect(middleware.before(context)).rejects.toThrow(HttpError);
-      await expect(middleware.before(context)).rejects.toThrow('No authorization header');
+      await expect(middleware.before(context)).rejects.toThrow(
+        'No authorization header'
+      );
     }
   });
 
@@ -98,8 +111,12 @@ describe('verifyAuthTokenMiddleware', () => {
     const middleware = verifyAuthTokenMiddleware(tokenVerificationPort);
 
     if (middleware.before) {
-      await expect(middleware.before(context)).rejects.toThrow(AuthenticationError);
-      await expect(middleware.before(context)).rejects.toThrow('Invalid token format');
+      await expect(middleware.before(context)).rejects.toThrow(
+        AuthenticationError
+      );
+      await expect(middleware.before(context)).rejects.toThrow(
+        'Invalid token format'
+      );
     }
   });
 
@@ -116,13 +133,19 @@ describe('verifyAuthTokenMiddleware', () => {
   });
 
   it('throws AuthenticationError if token verification fails', async () => {
-    tokenVerificationPort.verifyToken.mockRejectedValue(new Error('Invalid token'));
+    tokenVerificationPort.verifyToken.mockRejectedValue(
+      new Error('Invalid token')
+    );
     context.req.headers.authorization = 'Bearer invalidToken';
     const middleware = verifyAuthTokenMiddleware(tokenVerificationPort);
 
     if (middleware.before) {
-      await expect(middleware.before(context)).rejects.toThrow(AuthenticationError);
-      await expect(middleware.before(context)).rejects.toThrow('Invalid authentication');
+      await expect(middleware.before(context)).rejects.toThrow(
+        AuthenticationError
+      );
+      await expect(middleware.before(context)).rejects.toThrow(
+        'Invalid authentication'
+      );
     }
   });
 
