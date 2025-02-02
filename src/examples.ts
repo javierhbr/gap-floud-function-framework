@@ -2,21 +2,22 @@ import * as functions from 'firebase-functions';
 import { http, Request, Response } from '@google-cloud/functions-framework';
 
 import { z } from 'zod';
-import { logger } from './core/logger';
+
+import { jwtTokenVerificationPort } from './utils/auth';
+
 import {
+  logger,
+  Handler,
   bodyParser,
+  TokenPayload,
   bodyValidator,
   dependencyInjection,
   headerVariablesValidator,
   pathParameters,
   errorHandler,
-  responseWrapperV2,
+  responseWrapperMiddleware,
   verifyAuthTokenMiddleware,
-} from './core/middlewares';
-import { Handler } from './core/handler';
-import { TokenPayload } from './core';
-import { jwtTokenVerificationPort } from './utils/auth';
-
+} from '@noony/monorepo';
 // Request schema validation
 const helloWorldSchema = z.object({
   name: z.string().optional(),
@@ -25,7 +26,7 @@ const helloWorldSchema = z.object({
 const helloWorldHandler = Handler.use(dependencyInjection())
   .use(bodyValidator(helloWorldSchema))
   .use(errorHandler())
-  .use(responseWrapperV2<any>())
+  .use(responseWrapperMiddleware<any>())
   .handle(async (context) => {
     logger.info('Hello logs!', { structuredData: true });
     const name = context.req.body?.name || 'World';
@@ -45,7 +46,7 @@ export const helloWorld = http(
 
 // Health check endpoint
 const healthCheckHandler = Handler.use(errorHandler())
-  .use(responseWrapperV2<any>())
+  .use(responseWrapperMiddleware<any>())
   .handle(async (context) => {
     context.res.json({
       status: 'healthy',
@@ -74,7 +75,7 @@ const createUserHandler = Handler.use(dependencyInjection())
   .use(pathParameters())
   .use(bodyValidator(userSchema))
   .use(errorHandler())
-  .use(responseWrapperV2<any>())
+  .use(responseWrapperMiddleware<any>())
   .handle(async (context) => {
     const { name, email } = context.req.body as { name: string; email: string };
     context.res.status(201).json({ name, email });

@@ -8,18 +8,18 @@ import { PubSubService } from './services/PubSubService';
 import { WeatherValidation } from './WeatherValidation';
 import { Firestore } from '@google-cloud/firestore';
 import { PubSub } from '@google-cloud/pubsub';
-import { Handler } from '../core/handler';
 import {
+  Handler,
   bodyParser,
-  bodyValidator,
-  errorHandler,
   pathParameters,
-  responseWrapperV2,
-} from '../core/middlewares';
+  bodyValidator,
+  verifyAuthTokenMiddleware,
+  TokenPayload,
+  errorHandler,
+  responseWrapperMiddleware,
+} from '@noony/monorepo';
 import { WeatherData } from './types';
-import { verifyAuthTokenMiddleware } from '../core/middlewares/authenticationMiddleware';
 import { jwtTokenVerificationPort } from '../utils/auth';
-import { TokenPayload } from '../core/core';
 
 // Setup dependency injection
 const container = new ContainerInstance('weatherContainer');
@@ -51,7 +51,7 @@ export const weatherHandlerGet = new Handler()
   .use(verifyAuthTokenMiddleware<TokenPayload>(jwtTokenVerificationPort))
   .use(pathParameters())
   .use(new DateHeaderMiddleware())
-  .use(responseWrapperV2<any>())
+  .use(responseWrapperMiddleware<any>())
   .handle(async (context) => {
     const { id } = context.req.params;
     const weatherService = container.get(WeatherService);
@@ -69,7 +69,7 @@ export const weatherHandlerPost = new Handler()
   .use(bodyParser())
   .use(bodyValidator(weatherSchema))
   .use(new DateHeaderMiddleware())
-  .use(responseWrapperV2<any>())
+  .use(responseWrapperMiddleware<any>())
   .handle(async (context) => {
     const weatherService = container.get(WeatherService);
     const pubSubService = container.get(PubSubService);
@@ -104,7 +104,7 @@ export const weatherHandlerPut = new Handler()
   .use(bodyParser())
   .use(bodyValidator(weatherUpdateSchema))
   .use(new DateHeaderMiddleware())
-  .use(responseWrapperV2<any>())
+  .use(responseWrapperMiddleware<any>())
   .handle(async (context) => {
     const { id } = context.req.params;
     const weatherService = container.get(WeatherService);

@@ -3,19 +3,23 @@ import express from 'express';
 import { Container } from 'typedi';
 import { z } from 'zod';
 import { UserQueryParams } from './users/http.types';
-import { BaseMiddleware, Handler } from './core/handler';
 import {
+  logger,
+  Handler,
+  CustomRequest,
+  CustomResponse,
+  validatedQueryParameters,
   bodyValidator,
   dependencyInjection,
-  errorHandler,
   headerVariablesValidator,
-  responseWrapperV2,
-  validatedQueryParameters,
-} from './core/middlewares';
+  BaseMiddleware,
+  Context,
+  HttpError,
+  errorHandler,
+  responseWrapperMiddleware,
+} from '@noony/monorepo';
 import { UserService } from './users/user.service';
-import { Context, CustomRequest, CustomResponse } from './core/core';
-import { HttpError } from './core/errors';
-import { logger } from './core/logger';
+
 import { onRequest } from 'firebase-functions/https';
 
 Container.set('businessData', new Map<string, any>());
@@ -59,7 +63,7 @@ const listUsersHandler = Handler.use(dependencyInjection())
     )
   )
   .use(errorHandler())
-  .use(responseWrapperV2<any>())
+  .use(responseWrapperMiddleware<any>())
   .handle(async (context) => {
     const queryParams = context.req.query as UserQueryParams;
     const users = await Container.get(UserService).listUsers(queryParams);
@@ -70,7 +74,7 @@ const listUsersHandler = Handler.use(dependencyInjection())
 const getUserHandler = Handler.use(dependencyInjection())
   .use(pathParamValidator(['userId']))
   .use(errorHandler())
-  .use(responseWrapperV2<any>())
+  .use(responseWrapperMiddleware<any>())
   .handle(async (context: Context) => {
     const { userId } = context.req.params;
     logger.info(`Getting user ${JSON.stringify(context.req.params)}`);
@@ -83,7 +87,7 @@ const createUserHandler = Handler.use(dependencyInjection())
   .use(bodyValidator(createUserSchema))
   .use(headerVariablesValidator(['content-type']))
   .use(errorHandler())
-  .use(responseWrapperV2<any>())
+  .use(responseWrapperMiddleware<any>())
   .handle(async (context) => {
     const user = await Container.get(UserService).createUser(context.req.body);
     context.res.locals.responseBody = user;
@@ -92,7 +96,7 @@ const createUserHandler = Handler.use(dependencyInjection())
 
 // Health check handler
 const healthCheckHandler = Handler.use(errorHandler())
-  .use(responseWrapperV2<any>())
+  .use(responseWrapperMiddleware<any>())
   .handle(async (context) => {
     context.res.locals.responseBody = {
       status: 'healthy',

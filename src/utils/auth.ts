@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { CustomTokenVerificationPort } from '../core/middlewares/authenticationMiddleware';
+import { CustomTokenVerificationPort } from '@noony/monorepo';
 
 interface TokenPayload {
   userId: string;
