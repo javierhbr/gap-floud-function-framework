@@ -1,7 +1,6 @@
 import { Inject, Service } from 'typedi';
 import { UserQueryParams } from './http.types';
-import { HttpError } from '../core/errors';
-import { logger } from '../core/logger';
+import { HttpError, logger } from '@noony/monorepo';
 
 @Service()
 export class UserService {
