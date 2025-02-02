@@ -17,7 +17,7 @@ import {
   errorHandler,
   responseWrapperMiddleware,
   verifyAuthTokenMiddleware,
-} from '@noony/monorepo';
+} from '@noony/core';
 // Request schema validation
 const helloWorldSchema = z.object({
   name: z.string().optional(),

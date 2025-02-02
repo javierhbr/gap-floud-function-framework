@@ -34,7 +34,7 @@
   "dependencies": {
     "@google-cloud/firestore": "^7.1.0",
     "@google-cloud/functions-framework": "^3.3.0",
-    "@noony/monorepo": "file:/Users/javierbenavides/others/dev/noony/noony-core/build",
+    "@noony/core": "file:/Users/javierbenavides/others/dev/noony/noony-core/build",
     "@google-cloud/pubsub": "^4.1.0",
     "@types/jsonwebtoken": "^9.0.8",
     "axios": "^1.7.9",

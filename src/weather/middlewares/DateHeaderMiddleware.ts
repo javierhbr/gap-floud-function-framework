@@ -1,4 +1,4 @@
-import { BaseMiddleware, Context } from '@noony/monorepo';
+import { BaseMiddleware, Context } from '@noony/core';
 
 export class DateHeaderMiddleware implements BaseMiddleware {
   async before(context: Context): Promise<void> {

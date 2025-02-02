@@ -5,7 +5,7 @@ import {
   BodyValidationMiddleware,
   ErrorHandlerMiddleware,
   Handler,
-} from '@noony/monorepo';
+} from '@noony/core';
 
 const requestSchema = z.object({
   name: z.string().min(1),

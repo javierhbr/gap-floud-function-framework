@@ -17,7 +17,7 @@ import {
   TokenPayload,
   errorHandler,
   responseWrapperMiddleware,
-} from '@noony/monorepo';
+} from '@noony/core';
 import { WeatherData } from './types';
 import { jwtTokenVerificationPort } from '../utils/auth';
 

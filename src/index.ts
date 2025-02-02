@@ -17,7 +17,7 @@ import {
   HttpError,
   errorHandler,
   responseWrapperMiddleware,
-} from '@noony/monorepo';
+} from '@noony/core';
 import { UserService } from './users/user.service';
 
 import { onRequest } from 'firebase-functions/https';
