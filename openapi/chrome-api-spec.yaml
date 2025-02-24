@@ -1,0 +1,337 @@
+openapi: 3.0.3
+info:
+  title: Chrome Extension API
+  description: API specification for the Chrome Extension with Basic Auth and Bearer Auth.
+  version: 1.0.0
+servers:
+  - url: https://YOUR_API_GATEWAY_HOSTNAME/api/chrome
+    description: GCP API Gateway base URL
+
+paths:
+  /login:
+    post:
+      summary: User login
+      description: Authenticates a user and provides a token.
+      operationId: login
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+      x-google-backend:
+        address: https://YOUR_BACKEND_BASE_URL/login
+      x-google-allow: all
+
+  /guest-messages/history/{userId}:
+    post:
+      summary: Retrieve guest message history
+      description: Fetches the chat history for a guest user.
+      operationId: getGuestMessageHistory
+      security:
+        - basicAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the guest user.
+      responses:
+        '200':
+          description: Chat history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatResponseApi'
+        '400':
+          description: Bad request
+        '404':
+          description: User not found
+      x-google-backend:
+        address: https://YOUR_BACKEND_BASE_URL/guest-messages/history/{userId}
+      x-google-allow: all
+
+  /member-messages/history/{userId}:
+    post:
+      summary: Retrieve member message history
+      description: Fetches the chat history for a registered member.
+      operationId: getMemberMessageHistory
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the member user.
+      responses:
+        '200':
+          description: Chat history retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatResponseApi'
+        '400':
+          description: Bad request
+        '404':
+          description: User not found
+      x-google-backend:
+        address: https://YOUR_BACKEND_BASE_URL/member-messages/history/{userId}
+      x-google-allow: all
+
+  /guest-messages:
+    post:
+      summary: Send a guest message
+      description: Allows a guest user to send a chat message.
+      operationId: sendGuestMessage
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequestApi'
+      responses:
+        '200':
+          description: Message processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponseApi'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+      x-google-backend:
+        address: https://YOUR_BACKEND_BASE_URL/guest-messages
+      x-google-allow: all
+
+  /member-messages:
+    post:
+      summary: Send a member message
+      description: Allows a registered member to send a chat message.
+      operationId: sendMemberMessage
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequestApi'
+      responses:
+        '200':
+          description: Message processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponseApi'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+      x-google-backend:
+        address: https://YOUR_BACKEND_BASE_URL/member-messages
+      x-google-allow: all
+
+  /guest/request-otp:
+    post:
+      summary: Request OTP
+      description: Sends an OTP to the specified email for guest users.
+      operationId: requestOtp
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SentOtpRequest'
+      responses:
+        '200':
+          description: OTP request successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+      x-google-backend:
+        address: https://YOUR_BACKEND_BASE_URL/guest/request-otp
+      x-google-allow: all
+
+  /guest/verify-otp:
+    post:
+      summary: Verify OTP
+      description: Verifies the provided OTP for guest users.
+      operationId: verifyOtp
+      security:
+        - basicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyOtpRequest'
+      responses:
+        '200':
+          description: OTP verification successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyOtpResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized
+      x-google-backend:
+        address: https://YOUR_BACKEND_BASE_URL/guest/verify-otp
+      x-google-allow: all
+
+components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+        channel:
+          type: string
+      required:
+        - email
+        - password
+        - channel
+
+    LoginResponse:
+      type: object
+      properties:
+        user:
+          type: string
+        token:
+          type: string
+        error:
+          $ref: '#/components/schemas/Error'
+
+    ChatRequestApi:
+      type: object
+      properties:
+        contextId:
+          type: string
+        message:
+          type: string
+      required:
+        - contextId
+        - message
+
+    ChatResponseApi:
+      type: object
+      properties:
+        contextId:
+          type: string
+        dateTime:
+          type: string
+          format: date-time
+        replyMessage:
+          type: string
+        links:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              url:
+                type: string
+                format: uri
+        warning:
+          type: object
+          properties:
+            type:
+              type: string
+            message:
+              type: string
+        error:
+          $ref: '#/components/schemas/Error'
+
+    SentOtpRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+        - email
+
+    VerifyOtpRequest:
+      type: object
+      properties:
+        user:
+          type: string
+        verification:
+          type: string
+        error:
+          $ref: '#/components/schemas/Error'
+      required:
+        - user
+        - verification
+
+    VerifyOtpResponse:
+      type: object
+      properties:
+        user:
+          type: string
+        token:
+          type: string
+
+    BaseResponse:
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/Error'
+
+    Error:
+      type: object
+      properties:
+        status:
+          type: integer
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
