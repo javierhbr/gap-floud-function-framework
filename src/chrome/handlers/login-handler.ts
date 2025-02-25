@@ -7,22 +7,28 @@ import {
   responseWrapperMiddleware,
 } from '@noony/core';
 import { pathParamValidator } from '../../index';
-import { LoginRequestSchema } from './dto/login.dto';
+import {
+  LoginRequestSchema,
+  LoginRequestType,
+  LoginResponseType,
+} from './dto/login.dto';
 import {
   basicAuthMiddleware,
   bearerAuthMiddleware,
 } from '../middleware/auth-custom.middleware';
+import { bodyParser } from '@noony/core';
+import { User } from '../domain/user';
 
 // Handlers
-const loginHandler = Handler.use(dependencyInjection())
-  .use(bodyValidator(LoginRequestSchema))
+const loginHandler = Handler.use<LoginRequestType, User>(dependencyInjection())
+  .use(bodyValidator<LoginRequestType>(LoginRequestSchema))
   .use(basicAuthMiddleware)
+  .use(bodyParser<LoginRequestType>())
   .use(errorHandler())
-  .use(responseWrapperMiddleware<any>())
+  .use(responseWrapperMiddleware<LoginResponseType>())
   .handle(async (context) => {
-    // Implement login-handler.ts logic here
-    const body: any = context.req.body;
-    // Add your authentication logic
+    const body = context.req.parsedBody;
+
     console.log(`memberHistoryMessageHandler: ${body}`);
   });
 
