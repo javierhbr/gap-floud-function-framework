@@ -12,6 +12,15 @@ export interface LoginRequest {
   channel: string;
 }
 
+export interface OtpRequest {
+  email: string;
+}
+
+export interface VerifyOtpRequest {
+  user: string;
+  verification: string;
+  error?: Error;
+}
 export interface LoginResponse {
   user?: string;
   token?: string;

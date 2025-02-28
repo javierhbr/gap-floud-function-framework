@@ -9,11 +9,12 @@ import {
 import {
   LoginRequest,
   LoginRequestSchema,
+  SentOtpRequest,
+  SentOtpRequestSchema,
+  VerifyOtpRequest,
+  VerifyOtpRequestSchema,
 } from './dto/login.dto';
-import {
-  basicAuthMiddleware,
-  bearerAuthMiddleware,
-} from '../middleware/auth-custom.middleware';
+import { basicAuthMiddleware } from '../middleware/auth-custom.middleware';
 import { bodyParser } from '@noony/core';
 import { Container } from 'typedi';
 import { LoginApi } from './api/loginApi';
@@ -38,23 +39,40 @@ const loginHandler = Handler.use(dependencyInjection())
   });
 
 const verifyOtpHandler = Handler.use(dependencyInjection())
+  .use(bodyValidator(VerifyOtpRequestSchema))
   .use(basicAuthMiddleware)
+  .use(bodyParser())
   .use(errorHandler())
-  .use(responseWrapperMiddleware<any>())
+  .use(responseWrapperMiddleware())
   .handle(async (context) => {
-    const body: any = context.req.body;
-    // Add your authentication logic
-    console.log(`verifyOtpHandler: ${body}`);
+    const loginApi = Container.get(LoginApi);
+
+    if (!context.req.parsedBody) {
+      throw new Error('Missing request body');
+    }
+
+    const response = await loginApi.verifyOtp(
+      context.req.parsedBody as VerifyOtpRequest
+    );
+    context.res.locals.responseBody = response;
   });
 
 const requestOtpHandler = Handler.use(dependencyInjection())
-  .use(bearerAuthMiddleware)
+  .use(bodyValidator(SentOtpRequestSchema))
+  .use(basicAuthMiddleware)
   .use(errorHandler())
-  .use(responseWrapperMiddleware<any>())
+  .use(responseWrapperMiddleware())
   .handle(async (context) => {
-    const body: any = context.req.body;
-    // Add your authentication logic
-    console.log(`requestOtpHandler: ${body}`);
+    const loginApi = Container.get(LoginApi);
+
+    if (!context.req.parsedBody) {
+      throw new Error('Missing request body');
+    }
+
+    const response = await loginApi.sendOtp(
+      context.req.parsedBody as SentOtpRequest
+    );
+    context.res.locals.responseBody = response;
   });
 
 export { loginHandler, verifyOtpHandler, requestOtpHandler };

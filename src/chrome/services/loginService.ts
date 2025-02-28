@@ -1,5 +1,9 @@
 import { Service } from 'typedi';
-import { LoginResponse } from '../domain/genericDomain';
+import {
+  LoginResponse,
+  OtpRequest,
+  VerifyOtpRequest,
+} from '../domain/genericDomain';
 
 @Service()
 export class LoginService {
@@ -14,5 +18,19 @@ export class LoginService {
       token: 'mockToken123',
       error: undefined,
     };
+  }
+
+  async sendOtp(otpRequest: OtpRequest) {
+    console.log(`LoginService.sendOtp: ${JSON.stringify(otpRequest)}`);
+
+    // Mock response
+    return Promise.resolve({ message: 'OTP sent successfully' });
+  }
+
+  async verifyOtp(verifyOtp: VerifyOtpRequest) {
+    console.log(`LoginService.verifyOtp: ${JSON.stringify(verifyOtp)}`);
+
+    // Mock response
+    return Promise.resolve({ success: true });
   }
 }

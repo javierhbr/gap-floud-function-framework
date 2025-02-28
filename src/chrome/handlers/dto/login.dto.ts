@@ -23,7 +23,7 @@ export const SentOtpRequestSchema = z.object({
 
 // VerifyOtpRequest schema
 export const VerifyOtpRequestSchema = z.object({
-  user: z.string(),
+  email: z.string(),
   verification: z.string(),
   error: ErrorSchema.optional(),
 });
