@@ -14,12 +14,11 @@ import {
   pathParameters,
   bodyValidator,
   verifyAuthTokenMiddleware,
-  TokenPayload,
   errorHandler,
   responseWrapperMiddleware,
 } from '@noony/core';
 import { WeatherData } from './types';
-import { jwtTokenVerificationPort } from '../utils/auth';
+import { jwtTokenVerificationPort, TokenPayload } from '../utils/auth';
 
 // Setup dependency injection
 const container = new ContainerInstance('weatherContainer');

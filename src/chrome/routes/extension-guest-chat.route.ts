@@ -40,4 +40,4 @@ app.post('/guest/request-otp', (req, res) =>
 );
 
 // Export the function
-exports.chromeApi = onRequest(app);
+exports.guestChat = onRequest(app);

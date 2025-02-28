@@ -16,4 +16,4 @@ app.post('/login', (req, res) =>
 );
 
 // Export the function
-exports.chromeApi = onRequest(app);
+exports.loginApi = onRequest(app);

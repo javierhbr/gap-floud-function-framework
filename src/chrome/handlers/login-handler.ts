@@ -6,35 +6,39 @@ import {
   errorHandler,
   responseWrapperMiddleware,
 } from '@noony/core';
-import { pathParamValidator } from '../../index';
 import {
+  LoginRequest,
   LoginRequestSchema,
-  LoginRequestType,
-  LoginResponseType,
 } from './dto/login.dto';
 import {
   basicAuthMiddleware,
   bearerAuthMiddleware,
 } from '../middleware/auth-custom.middleware';
 import { bodyParser } from '@noony/core';
-import { User } from '../domain/user';
+import { Container } from 'typedi';
+import { LoginApi } from './api/loginApi';
 
-// Handlers
-const loginHandler = Handler.use<LoginRequestType, User>(dependencyInjection())
-  .use(bodyValidator<LoginRequestType>(LoginRequestSchema))
+const loginHandler = Handler.use(dependencyInjection())
+  .use(bodyValidator(LoginRequestSchema))
   .use(basicAuthMiddleware)
-  .use(bodyParser<LoginRequestType>())
+  .use(bodyParser())
   .use(errorHandler())
-  .use(responseWrapperMiddleware<LoginResponseType>())
+  .use(responseWrapperMiddleware())
   .handle(async (context) => {
-    const body = context.req.parsedBody;
+    const loginApi = Container.get(LoginApi);
 
-    console.log(`memberHistoryMessageHandler: ${body}`);
+    if (!context.req.parsedBody) {
+      throw new Error('Missing request body');
+    }
+
+    const response = await loginApi.login(
+      context.req.parsedBody as LoginRequest
+    );
+    context.res.locals.responseBody = response;
   });
 
 const verifyOtpHandler = Handler.use(dependencyInjection())
   .use(basicAuthMiddleware)
-  .use(pathParamValidator(['userId']))
   .use(errorHandler())
   .use(responseWrapperMiddleware<any>())
   .handle(async (context) => {
@@ -45,7 +49,6 @@ const verifyOtpHandler = Handler.use(dependencyInjection())
 
 const requestOtpHandler = Handler.use(dependencyInjection())
   .use(bearerAuthMiddleware)
-  .use(pathParamValidator(['userId']))
   .use(errorHandler())
   .use(responseWrapperMiddleware<any>())
   .handle(async (context) => {

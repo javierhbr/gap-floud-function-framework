@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { CustomTokenVerificationPort } from '@noony/core';
 
-interface TokenPayload {
+export interface TokenPayload {
   userId: string;
   email: string;
   role?: string;

@@ -24,4 +24,4 @@ app.post('/messages', (req, res) =>
   )
 );
 // Export the function
-exports.chromeApi = onRequest(app);
+exports.memberChat = onRequest(app);
