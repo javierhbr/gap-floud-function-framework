@@ -9,6 +9,8 @@ import {
 import {
   LoginRequest,
   LoginRequestSchema,
+  LoginRequestType,
+  LoginResponseType,
   SentOtpRequest,
   SentOtpRequestSchema,
   VerifyOtpRequest,
@@ -18,6 +20,26 @@ import { basicAuthMiddleware } from '../middleware/auth-custom.middleware';
 import { bodyParser } from '@noony/core';
 import { Container } from 'typedi';
 import { LoginApi } from './api/loginApi';
+
+const loginHandlerGen = new Handler<LoginRequestType, LoginResponseType>()
+  .use(dependencyInjection())
+  .use(bodyValidator(LoginRequestSchema))
+  .use(basicAuthMiddleware)
+  .use(bodyParser())
+  .use(errorHandler())
+  .use(responseWrapperMiddleware())
+  .handle(async (context) => {
+    const loginApi = Container.get(LoginApi);
+
+    if (!context.req.parsedBody) {
+      throw new Error('Missing request body');
+    }
+
+    const response = await loginApi.login(
+      context.req.parsedBody as LoginRequest
+    );
+    context.res.locals.responseBody = response;
+  });
 
 const loginHandler = Handler.use(dependencyInjection())
   .use(bodyValidator(LoginRequestSchema))
@@ -75,4 +97,4 @@ const requestOtpHandler = Handler.use(dependencyInjection())
     context.res.locals.responseBody = response;
   });
 
-export { loginHandler, verifyOtpHandler, requestOtpHandler };
+export { loginHandler, verifyOtpHandler, requestOtpHandler, loginHandlerGen };
