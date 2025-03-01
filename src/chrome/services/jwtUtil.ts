@@ -85,25 +85,19 @@ export class JwtUtil {
    * Generate a token with encrypted sensitive data
    */
   async generateTokenWithEncryption(
-    payload: TokenPayload,
-    sensitiveData: string | object,
+    payload: object,
+    sensitiveData: object,
     options?: SignOptions
   ): Promise<string> {
     try {
-      console.log(`jwtSecret ${this.jwtSecret}`);
-      const dataToEncrypt =
-        typeof sensitiveData === 'string'
-          ? sensitiveData
-          : JSON.stringify(sensitiveData);
-
-      const encryptedData = this.encryptData(dataToEncrypt);
+      const encryptedData = this.encryptData(sensitiveData); // Encrypt the sensitive object
       const payloadWithEncrypted = {
         ...payload,
-        encrypted: encryptedData,
+        encrypted: encryptedData, // Add the encrypted object to the payload
       };
 
-      return this.generateToken(payloadWithEncrypted, options);
-    } catch (error: unknown) {
+      return this.generateToken(payloadWithEncrypted, options); // Generate JWT with the new payload
+    } catch (error) {
       throw new JwtError(
         'Failed to generate encrypted token',
         error instanceof Error ? error : undefined
@@ -139,14 +133,14 @@ export class JwtUtil {
   async verifyAndDecryptToken<T extends object = JwtPayload>(
     token: string,
     options?: VerifyOptions
-  ): Promise<{ decoded: T; decrypted?: string }> {
+  ): Promise<{ decoded: T; decrypted?: object }> {
     const decoded = await this.verifyToken<T>(token, options);
 
     const payload = decoded as any;
     if (payload.encrypted) {
       try {
         const decrypted = this.decryptData(payload.encrypted as EncryptedData);
-        return { decoded, decrypted };
+        return { decoded, decrypted }; // Return both the decoded payload and decrypted object
       } catch (error) {
         throw new JwtError(
           'Failed to decrypt token data',
@@ -155,7 +149,7 @@ export class JwtUtil {
       }
     }
 
-    return { decoded };
+    return { decoded }; // Return only the decoded payload if no `encrypted` is present
   }
 
   /**
@@ -199,68 +193,72 @@ export class JwtUtil {
     }
   }
 
-  encryptData(plaintext: string): EncryptedData {
+  encryptData(data: object): EncryptedData {
     try {
-      const iv = crypto.randomBytes(16);
+      const iv = crypto.randomBytes(16); // Generate a random Initialization Vector (IV)
       const cipher = crypto.createCipheriv(
         'aes-256-cbc',
         this.encryptionKey,
         iv
       );
 
-      console.log('Encryption inputs:', {
-        key: this.encryptionKey.toString('hex'),
-        iv: iv.toString('hex'),
-        plaintext,
-      });
+      console.log('Encrypting Object:', data); // Debug log
 
-      let encrypted = cipher.update(plaintext);
-      encrypted = Buffer.concat([encrypted, cipher.final()]);
+      // Convert the object to JSON string before encryption
+      const serializedData = JSON.stringify(data);
 
-      const encryptedObject = {
-        iv: iv.toString('hex'),
-        encryptedData: encrypted.toString('hex'),
+      // Use buffers for encryption
+      const encryptedData = Buffer.concat([
+        cipher.update(serializedData, 'utf8'),
+        cipher.final(),
+      ]);
+
+      const encryptedObject: EncryptedData = {
+        iv: iv.toString('hex'), // Convert `iv` to hex string format
+        encryptedData: encryptedData.toString('hex'), // Convert encrypted data to hex string
       };
 
-      console.log('Encryption output:', encryptedObject);
+      console.log('Encryption Result:', encryptedObject); // Debug log
 
       return encryptedObject;
     } catch (error) {
-      console.error('Encryption error:', error);
+      console.error('Encryption error:', error); // Log for debugging
       throw new JwtError(
-        'Failed to encrypt data',
+        'Failed to encrypt sensitive data',
         error instanceof Error ? error : undefined
       );
     }
   }
 
-  decryptData(encrypted: EncryptedData): string {
+  decryptData(encrypted: EncryptedData): object {
     try {
-      console.log('Decrypting with:', {
-        iv: encrypted.iv,
-        encryptedData: encrypted.encryptedData,
-      });
+      console.log('Decrypting Object:', encrypted); // Debug log
 
-      const ivBuffer = Buffer.from(encrypted.iv, 'hex');
-      const encryptedBuffer = Buffer.from(encrypted.encryptedData, 'hex');
+      const ivBuffer = Buffer.from(encrypted.iv, 'hex'); // Convert IV from hex string to buffer
+      const encryptedBuffer = Buffer.from(encrypted.encryptedData, 'hex'); // Convert encrypted data from hex string to buffer
+
       const decipher = crypto.createDecipheriv(
         'aes-256-cbc',
         this.encryptionKey,
         ivBuffer
       );
 
-      console.log('Decryption inputs:', {
-        key: this.encryptionKey.toString('hex'),
-        iv: ivBuffer.toString('hex'),
-        encryptedBuffer: encryptedBuffer.toString('hex'),
-      });
+      // Use Buffer.concat to handle decryption output
+      const decryptedData = Buffer.concat([
+        decipher.update(encryptedBuffer),
+        decipher.final(),
+      ]);
 
-      let decrypted = decipher.update(encryptedBuffer);
-      decrypted = Buffer.concat([decrypted, decipher.final()]);
+      console.log('Decryption Raw Result:', decryptedData.toString('utf8')); // Debug log
 
-      return decrypted.toString();
+      // Parse the decrypted data back into an object
+      const parsedData = JSON.parse(decryptedData.toString('utf8'));
+
+      console.log('Decryption Parsed Result:', parsedData); // Debug log
+
+      return parsedData;
     } catch (error) {
-      console.error('Decryption error:', { error, encrypted });
+      console.error('Decryption error:', { error, encrypted }); // Log for debugging
       throw new JwtError(
         'Failed to decrypt token data',
         error instanceof Error ? error : undefined

@@ -59,12 +59,12 @@ describe('JwtUtil', () => {
 
   describe('generateTokenWithEncryption', () => {
     it('should generate token with encrypted string data', async () => {
-      const sensitiveString = 'sensitive-string-data';
+      const sensitiveString = { test: 'sensitive-string-data' };
       const token = await jwtUtil.generateTokenWithEncryption(
         testPayload,
         sensitiveString
       );
-      console.log(`token: ${token}`)
+      console.log(`token: ${token}`);
       const decoded = jwt.decode(token) as any;
       expect(decoded.encrypted).toBeDefined();
       expect(decoded.encrypted.iv).toBeDefined();
@@ -122,16 +122,53 @@ describe('JwtUtil', () => {
       });
     });
 
-    it('should encrypt and decrypt data successfully', () => {
-      const sensitiveData = 'test-sensitive-data';
-      const encrypted = jwtUtilInstance.encryptData(sensitiveData);
-      const decrypted = jwtUtilInstance.decryptData(encrypted);
+    it('should encrypt and decrypt an object successfully', () => {
+      const sensitiveObject = { secretKey: 'value', anotherKey: 42 }; // Example object
 
-      expect(decrypted).toBe(sensitiveData);
+      // Encrypt the object
+      const encrypted = jwtUtilInstance.encryptData(sensitiveObject);
+      expect(encrypted.iv).toBeDefined();
+      expect(encrypted.encryptedData).toBeDefined();
+
+      console.log('Encrypted Data:', encrypted); // Debug log
+
+      // Decrypt the object
+      const decrypted = jwtUtilInstance.decryptData(encrypted);
+      expect(decrypted).toMatchObject(sensitiveObject);
+
+      console.log('Decrypted Data:', decrypted); // Debug log
+    });
+
+    it('should verify and decrypt token with encrypted sensitive object data', async () => {
+      const sensitiveObject = { secretKey: 'value', anotherKey: 42 }; // Sample object
+
+      const token = await jwtUtilInstance.generateTokenWithEncryption(
+        testPayload,
+        sensitiveObject
+      );
+
+      // Decode the JWT to check token structure
+      const decoded = jwt.decode(token) as any;
+      expect(decoded.encrypted).toBeDefined();
+      expect(decoded.encrypted.iv).toBeDefined();
+      expect(decoded.encrypted.encryptedData).toBeDefined();
+
+      console.log('Token Structure:', decoded.encrypted); // Debug log
+
+      // Verify and decrypt the token
+      const result = await jwtUtilInstance.verifyAndDecryptToken(token);
+
+      // Verify the base payload
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { encrypted, ...basePayload } = result.decoded as any;
+      expect(basePayload).toMatchObject(testPayload);
+
+      // Verify decrypted sensitive data
+      expect(result.decrypted).toMatchObject(sensitiveObject);
     });
 
     it('should verify and decrypt token with sensitive data', async () => {
-      const simpleSensitiveData = 'test-sensitive-data';
+      const simpleSensitiveData = { test: 'sensitive-string-data' };
 
       const token = await jwtUtilInstance.generateTokenWithEncryption(
         testPayload,
@@ -149,13 +186,12 @@ describe('JwtUtil', () => {
       const result = await jwtUtilInstance.verifyAndDecryptToken(token);
 
       // Check if the base payload matches
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { encrypted, ...payloadWithoutEncrypted } = result.decoded as any;
       expect(payloadWithoutEncrypted).toMatchObject(testPayload);
 
       // Verify decryption
-      console.log('Decrypted Data:', result.decrypted); // Debug log for decrypted data
-      expect(result.decrypted).toBe(simpleSensitiveData);
+      console.log('Decrypted Data:', result.decrypted); // Debug log for the decrypted data
+      expect(result.decrypted).toStrictEqual(simpleSensitiveData); // Use deep equality check
     });
 
     it('should handle simple object as sensitive data', async () => {
@@ -167,7 +203,7 @@ describe('JwtUtil', () => {
       );
 
       const result = await jwtUtilInstance.verifyAndDecryptToken(token);
-      expect(JSON.parse(result.decrypted!)).toEqual(simpleObject);
+      expect(result.decrypted!).toEqual(simpleObject);
     });
 
     it('should handle tokens without encrypted data', async () => {
