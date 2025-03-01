@@ -39,7 +39,4 @@ export const BaseResponseSchema = z.object({
   error: ErrorSchema.optional(),
 });
 
-// Type inference helpers
-export type ChatRequestType = z.infer<typeof ChatRequestApiSchema>;
-export type ChatResponseType = z.infer<typeof ChatResponseApiSchema>;
 export type BaseResponseType = z.infer<typeof BaseResponseSchema>;

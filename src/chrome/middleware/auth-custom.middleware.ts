@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Context, BaseMiddleware } from '@noony/core';
+import { Context, BaseMiddleware, AuthenticationError } from '@noony/core';
 
 export const basicAuthMiddleware: BaseMiddleware = {
   before: async (context: Context) => {
@@ -15,7 +15,7 @@ export const bearerAuthMiddleware: BaseMiddleware = {
   before: async (context: Context) => {
     const authHeader = context.req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {
-      throw new Error('Missing or invalid bearer token');
+      throw new AuthenticationError('Missing or invalid bearer token');
     }
     // Implement JWT verification logic here
   },

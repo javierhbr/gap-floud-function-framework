@@ -6,12 +6,6 @@ export interface Error {
   details?: Record<string, any>;
 }
 
-export interface LoginRequest {
-  email: string;
-  password: string;
-  channel: string;
-}
-
 export interface OtpRequest {
   email: string;
 }

@@ -5,7 +5,7 @@ import {
   VerifyOtpRequest,
 } from '../domain/genericDomain';
 import { VerifyOtpResponse } from '../handlers/dto/login.dto';
-import { JwtUtil } from './jwtUtil';
+import { JwtUtil } from '../utils/jwtUtil';
 
 @Service()
 export class LoginService {
