@@ -10,7 +10,6 @@
     "start:hello": "functions-framework --target=helloWorld --source=build/",
     "start": "functions-framework --source=build/",
     "start:target": "npm run build && functions-framework --source=build/ --target=$npm_config_target",
-
     "shell": "npm run build && firebase functions:shell --project javierhbr-lab",
     "dev": "concurrently \"npm run watch\" \"npm run start\"",
     "serve-test": "npm run build && firebase emulators:start --only functions --project javierhbr-lab",
@@ -37,9 +36,8 @@
   "dependencies": {
     "@google-cloud/firestore": "^7.1.0",
     "@google-cloud/functions-framework": "^3.3.0",
-    "@noony/core": "file:/Users/javierbenavides/others/dev/noony/noony-core/build",
     "@google-cloud/pubsub": "^4.1.0",
-    "@types/jsonwebtoken": "^9.0.8",
+    "@noony/core": "file:/Users/javierbenavides/others/dev/noony/noony-core/build",
     "axios": "^1.7.9",
     "express": "^4.18.2",
     "firebase-admin": "^12.6.0",
@@ -52,6 +50,7 @@
   "devDependencies": {
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.11",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/module-alias": "^2.0.4",
     "@types/node": "^20.10.5",
     "@typescript-eslint/eslint-plugin": "^6.15.0",

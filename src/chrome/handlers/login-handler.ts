@@ -34,7 +34,6 @@ const loginHandler = new Handler<LoginRequestType, LoginResponseType>()
   .handle(async (context) => {
     const loginApi = Container.get(LoginApi);
 
-    console.log(JSON.stringify(context.req));
     if (!context.req.parsedBody) {
       throw new Error('Missing request body');
     }
