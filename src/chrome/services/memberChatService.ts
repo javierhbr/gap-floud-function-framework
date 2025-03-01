@@ -1,9 +1,10 @@
 import { Service } from 'typedi';
 import { ChatAsk, ChatReply } from '../domain/message';
+import { User } from '../domain/user';
 
 @Service()
 export class MemberChatService {
-  replyMemberMessages(ChatRequest: ChatAsk): Promise<ChatReply> {
+  replyMemberMessages(user: User, ChatRequest: ChatAsk): Promise<ChatReply> {
     return Promise.resolve({
       contextId: ChatRequest.contextId,
       dateTime: new Date(),

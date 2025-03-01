@@ -11,11 +11,11 @@ import {
   ChatRequestApiSchema,
   ChatRequestType,
   ChatResponseApi,
-  ChatResponseType,
 } from './dto/message.dto';
 import { Container } from 'typedi';
 import { MemberChatApi } from './api/memberChatApi';
 import { User } from '../domain/user';
+import { Context } from '../../../../noony/noony-core/build';
 
 const memberHistoryMessageHandler = new Handler<User, ChatResponseApi[]>()
   .use(dependencyInjection())
@@ -30,15 +30,16 @@ const memberHistoryMessageHandler = new Handler<User, ChatResponseApi[]>()
       );
   });
 
-const memberMessageHandler = new Handler<ChatRequestType, ChatResponseType>()
+const memberMessageHandler = new Handler<ChatRequestType, User>()
   .use(dependencyInjection())
   .use(bearerAuthMiddleware)
   .use(bodyValidator(ChatRequestApiSchema))
   .use(errorHandler())
   .use(responseWrapperMiddleware())
-  .handle(async (context: any) => {
+  .handle(async (context: Context) => {
     const memberChatApi = Container.get(MemberChatApi);
     context.res.locals.responseBody = await memberChatApi.replyMemberMessages(
+      context.user as User,
       context.req.parsedBody as ChatRequestType
     );
   });

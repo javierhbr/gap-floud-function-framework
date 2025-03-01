@@ -2,6 +2,8 @@ import 'reflect-metadata';
 import { Context, BaseMiddleware, AuthenticationError } from '@noony/core';
 import { Container } from 'typedi';
 import { JwtUtil } from '../utils/jwtUtil';
+import { UserTokenPayload } from '../domain/user';
+import { convertToUserFromTokenPayload } from '../mappers/userMapper';
 
 export const basicAuthMiddleware: BaseMiddleware = {
   before: async (context: Context) => {
@@ -12,11 +14,6 @@ export const basicAuthMiddleware: BaseMiddleware = {
     // Implement basic auth verification logic here
   },
 };
-
-interface UserPayload {
-  email: string;
-  // Add other user properties as needed
-}
 
 export const bearerAuthMiddleware: BaseMiddleware = {
   before: async (context: Context) => {
@@ -29,13 +26,10 @@ export const bearerAuthMiddleware: BaseMiddleware = {
     const jwtUtil = Container.get(JwtUtil);
 
     try {
-      const decodedToken = await jwtUtil.verifyToken<UserPayload>(token);
+      const decodedToken = await jwtUtil.verifyToken<UserTokenPayload>(token);
 
       // Set the user information in the context
-      context.user = {
-        email: decodedToken.email,
-        // Map other user properties as needed
-      };
+      context.user = convertToUserFromTokenPayload(decodedToken);
     } catch (error) {
       throw new AuthenticationError('Invalid or expired token');
     }
