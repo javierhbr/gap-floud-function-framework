@@ -11,28 +11,28 @@ import {
 const app = express();
 app.use(express.json());
 
-app.post('/guest/messages/history/:userId', (req, res) =>
+app.post('/v1/guest/messages/history/:userId', (req, res) =>
   guestHistoryMessageHandler.execute(
     req as unknown as CustomRequest,
     res as unknown as CustomResponse
   )
 );
 
-app.post('/guest/messages', (req, res) =>
+app.post('/v1/guest/messages', (req, res) =>
   guestMessageHandler.execute(
     req as unknown as CustomRequest,
     res as unknown as CustomResponse
   )
 );
 
-app.post('/guest/verify-otp', (req, res) =>
+app.post('/v1/guest/verify-otp', (req, res) =>
   verifyOtpHandler.execute(
     req as unknown as CustomRequest,
     res as unknown as CustomResponse
   )
 );
 
-app.post('/guest/request-otp', (req, res) =>
+app.post('v1/guest/request-otp', (req, res) =>
   requestOtpHandler.execute(
     req as unknown as CustomRequest,
     res as unknown as CustomResponse

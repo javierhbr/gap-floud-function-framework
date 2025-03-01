@@ -10,14 +10,14 @@ import {
 const app = express();
 app.use(express.json());
 
-app.post('/messages/history/:userId', (req, res) =>
+app.post('/v1/messages/history/:userId', (req, res) =>
   memberHistoryMessageHandler.execute(
     req as unknown as CustomRequest,
     res as unknown as CustomResponse
   )
 );
 
-app.post('/messages', (req, res) =>
+app.post('/v1/messages', (req, res) =>
   memberMessageHandler.execute(
     req as unknown as CustomRequest,
     res as unknown as CustomResponse

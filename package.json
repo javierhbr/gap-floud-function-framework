@@ -7,10 +7,8 @@
     "clean:esbuild": "rm -rf dist",
     "build:esbuild": "node esbuild.config.ts",
     "build:esbuild:watch": "node esbuild.config.ts --watch",
-    "build:esbuild:prod":  "npm run clean && NODE_ENV=production npm run build:esbuild",
+    "build:esbuild:prod": "npm run clean && NODE_ENV=production npm run build:esbuild",
     "deploy:esbuild:firebase": "esbuild-visualizer --metadata ./dist/bundle-analysis.json --open",
-
-
     "build": "tsc -p tsconfig.json && cp package.json build/",
     "watch": "tsc -w",
     "start:api:userApi": "npm run build && functions-framework --target=userApi --source=build",
@@ -35,7 +33,11 @@
     "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write \"src/**/*.{ts,js,json}\"",
     "format:check": "prettier --check \"src/**/*.{ts,js,json}\"",
-    "logs": "firebase functions:log"
+    "logs": "firebase functions:log",
+    "generate:token": "ts-node src/scripts/generateToken.ts"
+
+
+
   },
   "engines": {
     "node": "20"
@@ -73,6 +75,7 @@
     "module-alias": "^2.2.3",
     "prettier": "^3.1.1",
     "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },
   "private": true
