@@ -7,3 +7,13 @@ export interface User {
   otp: string;
   verified: boolean;
 }
+
+export interface UserTokenPayload {
+  id: string;
+  email: string;
+  name?: string;
+  expiration: Date;
+  type: string;
+  encrypted?: unknown;
+  verified: boolean;
+}

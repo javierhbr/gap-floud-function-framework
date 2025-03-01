@@ -27,7 +27,7 @@ describe('JwtUtil', () => {
 
   describe('generateToken', () => {
     it('should generate a valid JWT token', async () => {
-      const token = await jwtUtil.generateToken(testPayload);
+      const token = await jwtUtil.generateToken(   testPayload);
       expect(typeof token).toBe('string');
 
       const decoded = jwt.verify(token, testSecret);

@@ -6,6 +6,7 @@ import {
 } from '../domain/genericDomain';
 import { VerifyOtpResponse } from '../handlers/dto/login.dto';
 import { JwtUtil } from '../utils/jwtUtil';
+import { UserTokenPayload } from '../domain/user';
 
 @Service()
 export class LoginService {
@@ -14,8 +15,12 @@ export class LoginService {
   async login(email: string, password: string): Promise<LoginResponse> {
     console.log(`LoginService.login: ${JSON.stringify({ email, password })}`);
 
-    const payload = {
-      email,
+    const payload: UserTokenPayload = {
+      expiration: new Date('2023-12-31T23:59:59Z'),
+      id: 'mockId123',
+      verified: true,
+      email: 'mockEmail@example.com',
+      name: 'Mock Name',
       type: 'access_token',
     };
 
@@ -25,7 +30,6 @@ export class LoginService {
     return {
       email: 'mockUserId',
       token,
-      error: undefined,
     };
   }
 
@@ -35,8 +39,12 @@ export class LoginService {
 
   async verifyOtp(verifyOtp: VerifyOtpRequest): Promise<VerifyOtpResponse> {
     console.log(`LoginService.verifyOtp: ${JSON.stringify(verifyOtp)}`);
-    const payload = {
-      email: verifyOtp.email,
+    const payload: UserTokenPayload = {
+      expiration: new Date('2023-12-31T23:59:59Z'),
+      id: 'mockId123',
+      verified: true,
+      email: 'mockEmail@example.com',
+      name: 'Mock Name',
       type: 'access_token',
     };
 

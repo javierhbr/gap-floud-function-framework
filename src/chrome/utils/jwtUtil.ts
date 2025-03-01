@@ -1,10 +1,7 @@
 import jwt, { SignOptions, VerifyOptions, JwtPayload } from 'jsonwebtoken';
 import { Service } from 'typedi';
 import crypto from 'crypto';
-
-interface TokenPayload {
-  [key: string]: string | number | boolean | object;
-}
+import { UserTokenPayload } from '../domain/user';
 
 interface EncryptedData {
   iv: string;
@@ -63,7 +60,7 @@ export class JwtUtil {
    * Generate a JWT token
    */
   async generateToken(
-    payload: TokenPayload,
+    payload: UserTokenPayload,
     options?: SignOptions
   ): Promise<string> {
     try {
@@ -85,18 +82,20 @@ export class JwtUtil {
    * Generate a token with encrypted sensitive data
    */
   async generateTokenWithEncryption(
-    payload: object,
+    payload: UserTokenPayload, // Change to UserTokenPayload
     sensitiveData: object,
     options?: SignOptions
   ): Promise<string> {
     try {
-      const encryptedData = this.encryptData(sensitiveData); // Encrypt the sensitive object
-      const payloadWithEncrypted = {
+      const encryptedData = this.encryptData(sensitiveData);
+      const payloadWithEncrypted: UserTokenPayload = {
         ...payload,
-        encrypted: encryptedData, // Add the encrypted object to the payload
+        // Only add encrypted data as an additional property
+        // while maintaining the UserTokenPayload structure
+        encrypted: encryptedData,
       };
 
-      return this.generateToken(payloadWithEncrypted, options); // Generate JWT with the new payload
+      return this.generateToken(payloadWithEncrypted, options);
     } catch (error) {
       throw new JwtError(
         'Failed to generate encrypted token',
@@ -170,7 +169,7 @@ export class JwtUtil {
     try {
       const decoded = await this.verifyToken(token);
       const { exp: _exp, iat: _iat, ...payload } = decoded;
-      return this.generateToken(payload as TokenPayload, options);
+      return this.generateToken(payload as UserTokenPayload, options);
     } catch (error: unknown) {
       throw new JwtError(
         'Failed to refresh token',

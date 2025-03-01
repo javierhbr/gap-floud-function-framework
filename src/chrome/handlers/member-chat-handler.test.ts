@@ -1,7 +1,14 @@
 import 'reflect-metadata';
 import { Container } from 'typedi';
-import { memberMessageHandler } from './member-chat-handler';
-import { ChatRequestType, ChatResponseType } from './dto/message.dto';
+import {
+  memberHistoryMessageHandler,
+  memberMessageHandler,
+} from './member-chat-handler';
+import {
+  ChatRequestType,
+  ChatResponseApi,
+  ChatResponseType,
+} from './dto/message.dto';
 import {
   CustomRequest,
   CustomResponse,
@@ -9,6 +16,7 @@ import {
   BusinessError,
 } from '@noony/core';
 import { MemberChatApi } from './api/memberChatApi';
+import { User } from '../domain/user';
 
 // Create a mock for MemberChatApi
 const mockMemberChatApi = {
@@ -155,6 +163,127 @@ describe('memberMessageHandler', () => {
           success: false,
           payload: expect.objectContaining({
             error: 'Missing or invalid bearer token',
+          }),
+          timestamp: expect.any(String),
+        })
+      );
+    });
+  });
+});
+
+describe('memberHistoryMessageHandler', () => {
+  const createTestContext = (): Context => {
+    const req = {
+      headers: { authorization: 'Bearer test-token' },
+      get: jest.fn(),
+      header: jest.fn(),
+      accepts: jest.fn(),
+      acceptsCharsets: jest.fn(),
+      acceptsEncodings: jest.fn(),
+      acceptsLanguages: jest.fn(),
+    } as unknown as CustomRequest;
+
+    const res = {
+      locals: {
+        responseBody: undefined,
+      },
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    } as unknown as CustomResponse;
+
+    return {
+      req,
+      res,
+      businessData: new Map<string, unknown>(),
+      user: { email: 'test@example.com' } as User,
+    };
+  };
+
+  describe('happy path', () => {
+    it('should retrieve chat history successfully', async () => {
+      const mockResponse: ChatResponseApi[] = [
+        {
+          contextId: 'history-1',
+          dateTime: new Date('2024-01-01T00:00:00Z'),
+          replyMessage: 'Historic Response 1',
+          links: [],
+        },
+        {
+          contextId: 'history-2',
+          dateTime: new Date('2024-01-01T00:00:00Z'),
+          replyMessage: 'Historic Response 2',
+          links: [],
+        },
+      ];
+
+      mockMemberChatApi.getMemberHistoryMessages.mockResolvedValue(
+        mockResponse
+      );
+      const context = createTestContext();
+
+      await memberHistoryMessageHandler.execute(context.req, context.res);
+
+      expect(mockMemberChatApi.getMemberHistoryMessages).toHaveBeenCalledWith(
+        'test@example.com'
+      );
+      expect(context.res.locals.responseBody).toEqual(mockResponse);
+    });
+  });
+
+  describe('error handling', () => {
+    it('should handle API errors', async () => {
+      mockMemberChatApi.getMemberHistoryMessages.mockRejectedValue(
+        new BusinessError('API Error')
+      );
+      const context = createTestContext();
+
+      await memberHistoryMessageHandler.execute(context.req, context.res);
+
+      expect(context.res.status).toHaveBeenCalledWith(expect.any(Number));
+      expect(context.res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          payload: expect.objectContaining({
+            error: 'API Error',
+          }),
+          timestamp: expect.any(String),
+        })
+      );
+    });
+
+    it('should handle missing authorization', async () => {
+      const context = createTestContext();
+      if (context.req.headers) {
+        context.req.headers.authorization = '';
+      }
+
+      await memberHistoryMessageHandler.execute(context.req, context.res);
+
+      expect(context.res.status).toHaveBeenCalledWith(expect.any(Number));
+      expect(context.res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          payload: expect.objectContaining({
+            error: 'Missing or invalid bearer token',
+          }),
+          timestamp: expect.any(String),
+        })
+      );
+    });
+
+    it('should handle missing user', async () => {
+      const context = createTestContext();
+      context.user = undefined;
+
+      await memberHistoryMessageHandler.execute(context.req, context.res);
+
+      expect(context.res.status).toHaveBeenCalledWith(expect.any(Number));
+      expect(context.res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          payload: expect.objectContaining({
+            error: expect.stringContaining('user'),
           }),
           timestamp: expect.any(String),
         })
