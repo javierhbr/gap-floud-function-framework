@@ -17,12 +17,12 @@ export interface OtpRequest {
 }
 
 export interface VerifyOtpRequest {
-  user: string;
+  email: string;
   verification: string;
   error?: Error;
 }
 export interface LoginResponse {
-  user?: string;
+  email?: string;
   token?: string;
   error?: Error;
 }

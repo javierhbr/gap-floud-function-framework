@@ -14,7 +14,7 @@ export class LoginService {
 
     // Mock response
     return {
-      user: 'mockUserId',
+      email: 'mockUserId',
       token: 'mockToken123',
       error: undefined,
     };

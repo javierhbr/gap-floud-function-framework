@@ -51,13 +51,13 @@ export interface SentOtpRequest {
 }
 
 export interface VerifyOtpRequest {
-  user: string;
+  email: string;
   verification: string;
   error?: Error;
 }
 
 export interface VerifyOtpResponse {
-  user?: string;
+  email?: string;
   token?: string;
 }
 
