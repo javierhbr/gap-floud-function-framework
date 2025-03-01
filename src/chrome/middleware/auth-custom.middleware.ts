@@ -13,12 +13,10 @@ export const basicAuthMiddleware: BaseMiddleware = {
   },
 };
 
-
 interface UserPayload {
   email: string;
   // Add other user properties as needed
 }
-
 
 export const bearerAuthMiddleware: BaseMiddleware = {
   before: async (context: Context) => {

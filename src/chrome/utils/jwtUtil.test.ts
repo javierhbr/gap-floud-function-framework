@@ -1,14 +1,22 @@
 import { JwtUtil } from './jwtUtil';
 import jwt from 'jsonwebtoken';
+import { UserTokenPayload } from '../domain/user';
 
 describe('JwtUtil', () => {
-  let jwtUtil: JwtUtil;
-  const testSecret = 'test-secret';
-  const testPayload = { userId: '123', role: 'user' };
+  let jwtUtilInstance: JwtUtil;
+  const testSecret = 'testSecret';
+  const testPayload: UserTokenPayload = {
+    id: '123',
+    email: 'test@example.com',
+    type: 'user',
+    verified: true,
+    expiration: new Date('2025-03-01T07:26:08.383Z'),
+  };
+
   const testSensitiveData = { secretInfo: 'sensitive-data' };
 
   beforeEach(() => {
-    jwtUtil = new JwtUtil({ secret: testSecret });
+    jwtUtilInstance = new JwtUtil({ secret: testSecret });
   });
 
   describe('generateSecret', () => {
@@ -27,16 +35,20 @@ describe('JwtUtil', () => {
 
   describe('generateToken', () => {
     it('should generate a valid JWT token', async () => {
-      const token = await jwtUtil.generateToken(   testPayload);
+      const token = await jwtUtilInstance.generateToken(testPayload);
       expect(typeof token).toBe('string');
 
       const decoded = jwt.verify(token, testSecret);
-      expect(decoded).toMatchObject(testPayload);
+      const expectedPayload = {
+        ...testPayload,
+        expiration: testPayload.expiration.toISOString(),
+      };
+      expect(decoded).toMatchObject(expectedPayload);
     });
 
     it('should apply custom sign options', async () => {
       const customExpiresIn = '1h';
-      const token = await jwtUtil.generateToken(testPayload, {
+      const token = await jwtUtilInstance.generateToken(testPayload, {
         expiresIn: customExpiresIn,
       });
       const decoded = jwt.decode(token) as jwt.JwtPayload;
@@ -51,16 +63,16 @@ describe('JwtUtil', () => {
       const invalidPayload: any = {};
       invalidPayload.circular = invalidPayload;
 
-      await expect(jwtUtil.generateToken(invalidPayload)).rejects.toThrow(
-        'Failed to generate token'
-      );
+      await expect(
+        jwtUtilInstance.generateToken(invalidPayload)
+      ).rejects.toThrow('Failed to generate token');
     });
   });
 
   describe('generateTokenWithEncryption', () => {
     it('should generate token with encrypted string data', async () => {
       const sensitiveString = { test: 'sensitive-string-data' };
-      const token = await jwtUtil.generateTokenWithEncryption(
+      const token = await jwtUtilInstance.generateTokenWithEncryption(
         testPayload,
         sensitiveString
       );
@@ -72,7 +84,7 @@ describe('JwtUtil', () => {
     });
 
     it('should generate token with encrypted object data', async () => {
-      const token = await jwtUtil.generateTokenWithEncryption(
+      const token = await jwtUtilInstance.generateTokenWithEncryption(
         testPayload,
         testSensitiveData
       );
@@ -86,22 +98,26 @@ describe('JwtUtil', () => {
 
   describe('verifyToken', () => {
     it('should verify and decode a valid token', async () => {
-      const token = await jwtUtil.generateToken(testPayload);
-      const decoded = await jwtUtil.verifyToken(token);
-      expect(decoded).toMatchObject(testPayload);
+      const token = await jwtUtilInstance.generateToken(testPayload);
+      const decoded = await jwtUtilInstance.verifyToken(token);
+      const expectedPayload = {
+        ...testPayload,
+        expiration: testPayload.expiration.toISOString(),
+      };
+      expect(decoded).toMatchObject(expectedPayload);
     });
 
     it('should throw on invalid token', async () => {
-      await expect(jwtUtil.verifyToken('invalid-token')).rejects.toThrow(
-        'Token verification failed'
-      );
+      await expect(
+        jwtUtilInstance.verifyToken('invalid-token')
+      ).rejects.toThrow('Token verification failed');
     });
 
     it('should throw on expired token', async () => {
-      const token = await jwtUtil.generateToken(testPayload, {
+      const token = await jwtUtilInstance.generateToken(testPayload, {
         expiresIn: '0s',
       });
-      await expect(jwtUtil.verifyToken(token)).rejects.toThrow(
+      await expect(jwtUtilInstance.verifyToken(token)).rejects.toThrow(
         'Token verification failed'
       );
     });
@@ -140,33 +156,30 @@ describe('JwtUtil', () => {
     });
 
     it('should verify and decrypt token with encrypted sensitive object data', async () => {
-      const sensitiveObject = { secretKey: 'value', anotherKey: 42 }; // Sample object
+      const sensitiveObject = { secretKey: 'value', anotherKey: 42 };
 
       const token = await jwtUtilInstance.generateTokenWithEncryption(
         testPayload,
         sensitiveObject
       );
 
-      // Decode the JWT to check token structure
       const decoded = jwt.decode(token) as any;
       expect(decoded.encrypted).toBeDefined();
       expect(decoded.encrypted.iv).toBeDefined();
       expect(decoded.encrypted.encryptedData).toBeDefined();
 
-      console.log('Token Structure:', decoded.encrypted); // Debug log
-
-      // Verify and decrypt the token
       const result = await jwtUtilInstance.verifyAndDecryptToken(token);
 
-      // Verify the base payload
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { encrypted, ...basePayload } = result.decoded as any;
-      expect(basePayload).toMatchObject(testPayload);
+      const expectedPayload = {
+        ...testPayload,
+        expiration: testPayload.expiration.toISOString(),
+      };
+      expect(basePayload).toMatchObject(expectedPayload);
 
-      // Verify decrypted sensitive data
       expect(result.decrypted).toMatchObject(sensitiveObject);
     });
-
     it('should verify and decrypt token with sensitive data', async () => {
       const simpleSensitiveData = { test: 'sensitive-string-data' };
 
@@ -186,8 +199,12 @@ describe('JwtUtil', () => {
       const result = await jwtUtilInstance.verifyAndDecryptToken(token);
 
       // Check if the base payload matches
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { encrypted, ...payloadWithoutEncrypted } = result.decoded as any;
-      expect(payloadWithoutEncrypted).toMatchObject(testPayload);
+      expect(payloadWithoutEncrypted).toMatchObject({
+        ...testPayload,
+        expiration: testPayload.expiration.toISOString(),
+      });
 
       // Verify decryption
       console.log('Decrypted Data:', result.decrypted); // Debug log for the decrypted data
@@ -209,7 +226,10 @@ describe('JwtUtil', () => {
     it('should handle tokens without encrypted data', async () => {
       const token = await jwtUtilInstance.generateToken(testPayload);
       const result = await jwtUtilInstance.verifyAndDecryptToken(token);
-      expect(result.decoded).toMatchObject(testPayload);
+      expect(result.decoded).toMatchObject({
+        ...testPayload,
+        expiration: testPayload.expiration.toISOString(),
+      });
       expect(result.decrypted).toBeUndefined();
     });
   });
@@ -217,44 +237,47 @@ describe('JwtUtil', () => {
   describe('decodeToken', () => {
     it('should decode token without verification', () => {
       const token = jwt.sign(testPayload, 'wrong-secret');
-      const decoded = jwtUtil.decodeToken(token);
-      expect(decoded).toMatchObject(testPayload);
+      const decoded = jwtUtilInstance.decodeToken(token);
+      expect(decoded).toMatchObject({
+        ...testPayload,
+        expiration: testPayload.expiration.toISOString(),
+      });
     });
 
     it('should return null for invalid token format', () => {
-      const decoded = jwtUtil.decodeToken('invalid-token');
+      const decoded = jwtUtilInstance.decodeToken('invalid-token');
       expect(decoded).toBeNull();
     });
   });
 
   describe('isTokenExpired', () => {
     it('should return true for expired token', async () => {
-      const token = await jwtUtil.generateToken(testPayload, {
+      const token = await jwtUtilInstance.generateToken(testPayload, {
         expiresIn: '-1h',
       });
-      expect(jwtUtil.isTokenExpired(token)).toBe(true);
+      expect(jwtUtilInstance.isTokenExpired(token)).toBe(true);
     });
 
     it('should return false for valid token', async () => {
-      const token = await jwtUtil.generateToken(testPayload, {
+      const token = await jwtUtilInstance.generateToken(testPayload, {
         expiresIn: '1h',
       });
-      expect(jwtUtil.isTokenExpired(token)).toBe(false);
+      expect(jwtUtilInstance.isTokenExpired(token)).toBe(false);
     });
 
     it('should return true for invalid token', () => {
-      expect(jwtUtil.isTokenExpired('invalid-token')).toBe(true);
+      expect(jwtUtilInstance.isTokenExpired('invalid-token')).toBe(true);
     });
   });
 
   describe('refreshToken', () => {
     it('should generate new token with same payload but different timestamps', async () => {
-      const originalToken = await jwtUtil.generateToken(testPayload);
+      const originalToken = await jwtUtilInstance.generateToken(testPayload);
 
       // Wait a small amount of time to ensure different iat timestamp
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      const refreshedToken = await jwtUtil.refreshToken(originalToken);
+      const refreshedToken = await jwtUtilInstance.refreshToken(originalToken);
 
       // Verify both tokens have the same payload but different timestamps
       const originalDecoded = jwt.verify(
@@ -285,9 +308,9 @@ describe('JwtUtil', () => {
     });
 
     it('should throw error for invalid token', async () => {
-      await expect(jwtUtil.refreshToken('invalid-token')).rejects.toThrow(
-        'Failed to refresh token'
-      );
+      await expect(
+        jwtUtilInstance.refreshToken('invalid-token')
+      ).rejects.toThrow('Failed to refresh token');
     });
   });
 });
