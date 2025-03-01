@@ -10,6 +10,7 @@ import {
   LoginRequest,
   VerifyOtpRequest,
   SentOtpRequest,
+  VerifyOtpResponse,
 } from './dto/login.dto';
 import { LoginApi } from './api/loginApi';
 
@@ -118,6 +119,92 @@ describe('Login handlers', () => {
 
     await requestOtpHandler.execute(context.req as any, context.res as any);
 
+    expect(context.res.status).toHaveBeenCalledWith(expect.any(Number));
+    expect(context.res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: expect.stringContaining('Validation error'),
+        details: expect.any(Array),
+      })
+    );
+  });
+});
+
+describe('requestOtpHandler', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('should call loginApi.sendOtp and set response on success', async () => {
+    const sentOtpRequest: SentOtpRequest = {
+      email: 'test@test.com',
+    };
+
+    // Since BaseResponseType does not include "success", cast the object to unknown first.
+    const expectedResponse = { success: true } as unknown;
+    mockLoginApi.sendOtp.mockResolvedValue(expectedResponse);
+
+    const context = createContext(sentOtpRequest);
+
+    // Cast req and res to any to bypass missing Express methods
+    await requestOtpHandler.execute(context.req as any, context.res as any);
+
+    // Verify that sendOtp was called with the correct request body
+    expect(mockLoginApi.sendOtp).toHaveBeenCalledWith(sentOtpRequest);
+    // Verify that the response was stored in res.locals
+    expect(context.res.locals.responseBody).toEqual(expectedResponse);
+  });
+
+  test('should return an error response when request body is missing', async () => {
+    const context = createContext(undefined);
+
+    // Execute the handler with our casted req/res objects.
+    await requestOtpHandler.execute(context.req as any, context.res as any);
+
+    // The error middleware in the chain should have set a status and returned an error response via res.json.
+    expect(context.res.status).toHaveBeenCalledWith(expect.any(Number));
+    expect(context.res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: expect.stringContaining('Validation error'),
+        details: expect.any(Array),
+      })
+    );
+  });
+});
+
+describe('verifyOtpHandler', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  test('should call loginApi.verifyOtp and set the response on success', async () => {
+    const verifyOtpReq: VerifyOtpRequest = {
+      email: 'test@test.com',
+      verification: '12345',
+    };
+    const expectedResponse: VerifyOtpResponse = {
+      email: 'test@test.com',
+      token: 'tokenXYZ',
+    };
+    mockLoginApi.verifyOtp.mockResolvedValue(expectedResponse);
+
+    const context = createContext(verifyOtpReq);
+
+    // Cast req and res to any as our dummy context might not have all Express properties
+    await verifyOtpHandler.execute(context.req as any, context.res as any);
+
+    // Verify that the OTP API was called with the parsed request body
+    expect(mockLoginApi.verifyOtp).toHaveBeenCalledWith(verifyOtpReq);
+    // Verify that the response was stored in res.locals
+    expect(context.res.locals.responseBody).toEqual(expectedResponse);
+  });
+
+  test('should return an error response when request body is missing', async () => {
+    const context = createContext(undefined);
+
+    // Execute the handler. The error middleware in the chain should handle the missing body error.
+    await verifyOtpHandler.execute(context.req as any, context.res as any);
+
+    // Expect that an HTTP error status is set and a JSON error response is returned.
     expect(context.res.status).toHaveBeenCalledWith(expect.any(Number));
     expect(context.res.json).toHaveBeenCalledWith(
       expect.objectContaining({

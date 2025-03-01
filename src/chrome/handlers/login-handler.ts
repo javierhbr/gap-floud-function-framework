@@ -1,9 +1,10 @@
 import 'reflect-metadata';
 import {
-  Handler,
+  bodyParser,
   bodyValidator,
   dependencyInjection,
   errorHandler,
+  Handler,
   responseWrapperMiddleware,
 } from '@noony/core';
 import {
@@ -19,7 +20,6 @@ import {
   VerifyOtpResponse,
 } from './dto/login.dto';
 import { basicAuthMiddleware } from '../middleware/auth-custom.middleware';
-import { bodyParser } from '@noony/core';
 import { Container } from 'typedi';
 import { LoginApi } from './api/loginApi';
 import { BaseResponseType } from './dto/generic.dto';
@@ -39,10 +39,9 @@ const loginHandler = new Handler<LoginRequestType, LoginResponseType>()
       throw new Error('Missing request body');
     }
 
-    const response = await loginApi.login(
+    context.res.locals.responseBody = await loginApi.login(
       context.req.parsedBody as LoginRequest
     );
-    context.res.locals.responseBody = response;
   });
 
 const verifyOtpHandler = new Handler<VerifyOtpRequestType, VerifyOtpResponse>()
@@ -54,10 +53,9 @@ const verifyOtpHandler = new Handler<VerifyOtpRequestType, VerifyOtpResponse>()
   .use(responseWrapperMiddleware())
   .handle(async (context) => {
     const loginApi = Container.get(LoginApi);
-    const response = await loginApi.verifyOtp(
+    context.res.locals.responseBody = await loginApi.verifyOtp(
       context.req.parsedBody as VerifyOtpRequest
     );
-    context.res.locals.responseBody = response;
   });
 
 const requestOtpHandler = new Handler<SentOtpRequest, BaseResponseType>()
@@ -73,10 +71,9 @@ const requestOtpHandler = new Handler<SentOtpRequest, BaseResponseType>()
       throw new Error('Missing request body');
     }
 
-    const response = await loginApi.sendOtp(
+    context.res.locals.responseBody = await loginApi.sendOtp(
       context.req.parsedBody as SentOtpRequest
     );
-    context.res.locals.responseBody = response;
   });
 
 export { loginHandler, verifyOtpHandler, requestOtpHandler };
