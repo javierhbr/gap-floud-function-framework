@@ -31,7 +31,7 @@ export class MemberChatApi {
     };
   }
 
-  async getMemberHistoryMessages(email: string): Promise<ChatResponseApi[]> {
-    return await this.memberChatService.getMemberHistoryMessages(email);
+  async getMemberHistoryMessages(user: User): Promise<ChatResponseApi[]> {
+    return await this.memberChatService.getMemberHistoryMessages(user);
   }
 }

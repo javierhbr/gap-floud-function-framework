@@ -11,8 +11,8 @@ app.use(express.json());
 app.post('/v1/login', (req, res) =>
   loginHandler.execute(
     req as unknown as CustomRequest<LoginRequestType>,
-    res as unknown as CustomResponse,
-  ),
+    res as unknown as CustomResponse
+  )
 );
 
 // Export the function

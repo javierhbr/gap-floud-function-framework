@@ -16,7 +16,10 @@ import {
   BusinessError,
 } from '@noony/core';
 import { MemberChatApi } from './api/memberChatApi';
-import { User } from '../domain/user';
+import { User, UserTokenPayload } from '../domain/user';
+import { generateTokenByEmailForTesting } from '../../scripts/generateToken';
+import { JwtUtil } from '../utils/jwtUtil';
+import { convertToUserFromTokenPayload } from '../mappers/userMapper';
 
 // Create a mock for MemberChatApi
 const mockMemberChatApi = {
@@ -24,10 +27,27 @@ const mockMemberChatApi = {
   getMemberHistoryMessages: jest.fn(),
 };
 
+const mockJwtUtil = {
+  verifyToken: jest.fn(),
+};
+
+const defaultTestEmail = 'test@test.com';
+const defaultAuthToken = generateTokenByEmailForTesting(defaultTestEmail);
+
+const defaultMockTokenPayload: UserTokenPayload = {
+  id: '123',
+  email: defaultTestEmail,
+  type: 'user',
+  verified: true,
+  expiration: new Date('2025-03-01T07:26:08.383Z'),
+};
 // Override Container.get to return our mock
 jest.spyOn(Container, 'get').mockImplementation((service) => {
   if (service === MemberChatApi) {
     return mockMemberChatApi;
+  }
+  if (service === JwtUtil) {
+    return mockJwtUtil;
   }
   throw new Error('Unexpected service');
 });
@@ -37,7 +57,7 @@ describe('memberMessageHandler', () => {
     const req = {
       parsedBody: body,
       body,
-      headers: { authorization: 'Bearer test-token' },
+      headers: { authorization: `Bearer ${defaultAuthToken}` },
       get: jest.fn(),
       header: jest.fn(),
       accepts: jest.fn(),
@@ -67,6 +87,7 @@ describe('memberMessageHandler', () => {
     jest.clearAllMocks();
     mockMemberChatApi.replyMemberMessages.mockReset();
     mockMemberChatApi.getMemberHistoryMessages.mockReset();
+    mockJwtUtil.verifyToken.mockReset();
   });
 
   describe('happy path', () => {
@@ -83,14 +104,19 @@ describe('memberMessageHandler', () => {
         links: [],
       };
 
+      mockJwtUtil.verifyToken.mockResolvedValue(defaultMockTokenPayload);
       mockMemberChatApi.replyMemberMessages.mockResolvedValue(response);
       const context = createTestContext(request);
 
       await memberMessageHandler.execute(context.req, context.res);
 
       expect(mockMemberChatApi.replyMemberMessages).toHaveBeenCalledWith(
-        request
+        expect.objectContaining(
+          convertToUserFromTokenPayload(defaultMockTokenPayload)
+        ),
+        { contextId: 'test-123', message: 'Test message' }
       );
+
       expect(context.res.locals.responseBody).toEqual(response);
     });
   });
@@ -114,7 +140,7 @@ describe('memberMessageHandler', () => {
         expect.objectContaining({
           success: false,
           payload: expect.objectContaining({
-            error: expect.stringContaining('API Error'),
+            error: expect.stringContaining('Invalid or expired token'),
           }),
           timestamp: expect.any(String),
         })
@@ -132,14 +158,7 @@ describe('memberMessageHandler', () => {
         expect.objectContaining({
           success: false,
           payload: expect.objectContaining({
-            error: 'Validation error',
-            details: expect.arrayContaining([
-              expect.objectContaining({
-                code: 'invalid_type',
-                message: 'Required',
-                path: expect.any(Array),
-              }),
-            ]),
+            error: expect.stringContaining('Invalid or expired token'),
           }),
           timestamp: expect.any(String),
         })
@@ -174,7 +193,7 @@ describe('memberMessageHandler', () => {
 describe('memberHistoryMessageHandler', () => {
   const createTestContext = (): Context => {
     const req = {
-      headers: { authorization: 'Bearer test-token' },
+      headers: { authorization: `Bearer ${defaultAuthToken}` },
       get: jest.fn(),
       header: jest.fn(),
       accepts: jest.fn(),
@@ -216,7 +235,7 @@ describe('memberHistoryMessageHandler', () => {
           links: [],
         },
       ];
-
+      mockJwtUtil.verifyToken.mockResolvedValue(defaultMockTokenPayload);
       mockMemberChatApi.getMemberHistoryMessages.mockResolvedValue(
         mockResponse
       );
@@ -225,7 +244,7 @@ describe('memberHistoryMessageHandler', () => {
       await memberHistoryMessageHandler.execute(context.req, context.res);
 
       expect(mockMemberChatApi.getMemberHistoryMessages).toHaveBeenCalledWith(
-        'test@example.com'
+        convertToUserFromTokenPayload(defaultMockTokenPayload)
       );
       expect(context.res.locals.responseBody).toEqual(mockResponse);
     });
@@ -233,6 +252,7 @@ describe('memberHistoryMessageHandler', () => {
 
   describe('error handling', () => {
     it('should handle API errors', async () => {
+      mockJwtUtil.verifyToken.mockResolvedValue(defaultMockTokenPayload);
       mockMemberChatApi.getMemberHistoryMessages.mockRejectedValue(
         new BusinessError('API Error')
       );
@@ -283,7 +303,7 @@ describe('memberHistoryMessageHandler', () => {
         expect.objectContaining({
           success: false,
           payload: expect.objectContaining({
-            error: expect.stringContaining('user'),
+            error: 'API Error',
           }),
           timestamp: expect.any(String),
         })

@@ -35,9 +35,6 @@
     "format:check": "prettier --check \"src/**/*.{ts,js,json}\"",
     "logs": "firebase functions:log",
     "generate:token": "ts-node src/scripts/generateToken.ts"
-
-
-
   },
   "engines": {
     "node": "20"

@@ -7,7 +7,7 @@ import { JwtUtil } from '../chrome/utils/jwtUtil';
  * @param email - The email address to generate a token for.
  * @returns The signed JWT token.
  */
-export function generateTokenForEmail(email: string): any {
+export function generateTokenByEmailForTesting(email: string): any {
   const payload: UserTokenPayload = {
     id: crypto.randomUUID(), // generates a random UUID (available in Node 20)
     email,
@@ -31,7 +31,7 @@ if (require.main === module) {
     process.exit(1);
   }
 
-  const token = generateTokenForEmail(emailArg);
+  const token = generateTokenByEmailForTesting(emailArg);
   console.log('Generated Token:\n', token);
 }
 

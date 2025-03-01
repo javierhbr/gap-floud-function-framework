@@ -20,7 +20,7 @@ export class MemberChatService {
     });
   }
 
-  async getMemberHistoryMessages(_email: string): Promise<ChatReply[]> {
+  async getMemberHistoryMessages(_user: User): Promise<ChatReply[]> {
     return [
       {
         contextId: 'context-1',

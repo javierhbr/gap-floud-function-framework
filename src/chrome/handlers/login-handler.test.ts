@@ -73,7 +73,7 @@ describe('Login handlers', () => {
   test('verifyOtpHandler calls loginApi.verifyOtp and sets response', async () => {
     const verifyOtpReq: VerifyOtpRequest = {
       email: 'test@test.com',
-      verification: '12345',
+      verification: 'ZAQ!2wsxc',
     };
     const expectedResponse = { email: 'testUser', token: 'abc123' };
     mockLoginApi.verifyOtp.mockResolvedValue(expectedResponse);
@@ -109,8 +109,12 @@ describe('Login handlers', () => {
     expect(context.res.status).toHaveBeenCalledWith(expect.any(Number));
     expect(context.res.json).toHaveBeenCalledWith(
       expect.objectContaining({
-        error: expect.stringContaining('Validation error'),
-        details: expect.any(Array),
+        payload: expect.objectContaining({
+          error: expect.stringContaining('Validation error'),
+          details: expect.any(Array),
+        }),
+        success: false,
+        timestamp: expect.any(String),
       })
     );
   });
@@ -123,8 +127,12 @@ describe('Login handlers', () => {
     expect(context.res.status).toHaveBeenCalledWith(expect.any(Number));
     expect(context.res.json).toHaveBeenCalledWith(
       expect.objectContaining({
-        error: expect.stringContaining('Validation error'),
-        details: expect.any(Array),
+        payload: expect.objectContaining({
+          error: expect.stringContaining('Validation error'),
+          details: expect.any(Array),
+        }),
+        success: false,
+        timestamp: expect.any(String),
       })
     );
   });
@@ -168,8 +176,12 @@ describe('requestOtpHandler', () => {
     expect(context.res.status).toHaveBeenCalledWith(expect.any(Number));
     expect(context.res.json).toHaveBeenCalledWith(
       expect.objectContaining({
-        error: expect.stringContaining('Validation error'),
-        details: expect.any(Array),
+        payload: expect.objectContaining({
+          error: expect.stringContaining('Validation error'),
+          details: expect.any(Array),
+        }),
+        success: false,
+        timestamp: expect.any(String),
       })
     );
   });
@@ -184,8 +196,12 @@ describe('requestOtpHandler', () => {
     expect(context.res.status).toHaveBeenCalledWith(expect.any(Number));
     expect(context.res.json).toHaveBeenCalledWith(
       expect.objectContaining({
-        error: expect.stringContaining('Validation error'),
-        details: expect.any(Array),
+        payload: expect.objectContaining({
+          error: expect.stringContaining('Validation error'),
+          details: expect.any(Array),
+        }),
+        success: false,
+        timestamp: expect.any(String),
       })
     );
   });
@@ -233,8 +249,12 @@ describe('verifyOtpHandler', () => {
     expect(context.res.status).toHaveBeenCalledWith(expect.any(Number));
     expect(context.res.json).toHaveBeenCalledWith(
       expect.objectContaining({
-        error: expect.stringContaining('Validation error'),
-        details: expect.any(Array),
+        payload: expect.objectContaining({
+          error: expect.stringContaining('Validation error'),
+          details: expect.any(Array),
+        }),
+        success: false,
+        timestamp: expect.any(String),
       })
     );
   });
@@ -249,8 +269,12 @@ describe('verifyOtpHandler', () => {
     expect(context.res.status).toHaveBeenCalledWith(expect.any(Number));
     expect(context.res.json).toHaveBeenCalledWith(
       expect.objectContaining({
-        error: expect.stringContaining('Validation error'),
-        details: expect.any(Array),
+        payload: expect.objectContaining({
+          error: expect.stringContaining('Validation error'),
+          details: expect.any(Array),
+        }),
+        success: false,
+        timestamp: expect.any(String),
       })
     );
   });

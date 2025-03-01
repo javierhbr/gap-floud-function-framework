@@ -32,7 +32,7 @@ app.post('/v1/guest/verify-otp', (req, res) =>
   )
 );
 
-app.post('v1/guest/request-otp', (req, res) =>
+app.post('/v1/guest/request-otp', (req, res) =>
   requestOtpHandler.execute(
     req as unknown as CustomRequest,
     res as unknown as CustomResponse
