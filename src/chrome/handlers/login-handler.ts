@@ -19,7 +19,11 @@ import {
   VerifyOtpRequestType,
   VerifyOtpResponse,
 } from './dto/login.dto';
-import { basicAuthMiddleware } from '../middleware/auth-custom.middleware';
+import {
+  API_KEYS_TYPE,
+  apiKeyMiddleware,
+  basicAuthMiddleware,
+} from '../middleware/auth-custom.middleware';
 import { Container } from 'typedi';
 import { LoginApi } from './api/loginApi';
 import { BaseResponseType } from './dto/generic.dto';
@@ -59,8 +63,8 @@ const verifyOtpHandler = new Handler<VerifyOtpRequestType, VerifyOtpResponse>()
 
 const requestOtpHandler = new Handler<SentOtpRequest, BaseResponseType>()
   .use(dependencyInjection())
+  .use(apiKeyMiddleware(API_KEYS_TYPE.GUEST))
   .use(bodyValidator(SentOtpRequestSchema))
-  .use(basicAuthMiddleware)
   .use(errorHandler())
   .use(responseWrapperMiddleware())
   .handle(async (context) => {

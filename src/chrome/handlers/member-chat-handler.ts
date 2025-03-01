@@ -7,10 +7,7 @@ import {
   responseWrapperMiddleware,
 } from '@noony/core';
 import { bearerAuthMiddleware } from '../middleware/auth-custom.middleware';
-import {
-  ChatRequestApiSchema,
-  ChatRequestType,
-} from './dto/message.dto';
+import { ChatRequestApiSchema, ChatRequestType } from './dto/message.dto';
 import { Container } from 'typedi';
 import { MemberChatApi } from './api/memberChatApi';
 import { User } from '../domain/user';
@@ -24,9 +21,7 @@ const memberHistoryMessageHandler = new Handler<User, User>()
   .handle(async (context) => {
     const memberChatApi = Container.get(MemberChatApi);
     context.res.locals.responseBody =
-      await memberChatApi.getMemberHistoryMessages(
-        context.user as User
-      );
+      await memberChatApi.getMemberHistoryMessages(context.user as User);
   });
 
 const memberMessageHandler = new Handler<ChatRequestType, User>()

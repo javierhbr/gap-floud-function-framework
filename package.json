@@ -14,10 +14,19 @@
     "start:api:userApi": "npm run build && functions-framework --target=userApi --source=build",
     "start:hello": "functions-framework --target=helloWorld --source=build/",
     "start": "functions-framework --source=build/",
-    "start:target": "npm run build && functions-framework --source=build/ --target=$npm_config_target",
+
+    "start:target:old": "npm run build && functions-framework --source=build/ --target=guestChat",
+    "start:target:old2": "npm run build && node -r dotenv/config functions-framework --source=build/ --target=$npm_config_target",
+    "start:target": "npm run build && npx functions-framework --source=build/ --target=$npm_config_target",
+    "start:target:dev": "cross-env NODE_ENV=development npm run start:target",
+
+
+
+
     "shell": "npm run build && firebase functions:shell --project javierhbr-lab",
     "dev": "concurrently \"npm run watch\" \"npm run start\"",
-    "serve-test": "npm run build && firebase emulators:start --only functions --project javierhbr-lab",
+    "serve-dev": "cross-env NODE_ENV=development npm run serve-test",
+    "serve-test": "npm run build && node -r dotenv/config $(which firebase) emulators:start --only functions --project javierhbr-lab",
     "shell-test-old": "npm run build && firebase functions:shell --project javierhbr-lab",
     "shell-test": "npm run build && firebase functions:shell --project javierhbr-lab",
     "start-test": "npm run shell-test --project javierhbr-lab",
@@ -41,10 +50,12 @@
   },
   "dependencies": {
     "@google-cloud/firestore": "^7.1.0",
-    "@google-cloud/functions-framework": "^3.3.0",
+    "@google-cloud/functions-framework": "^3.4.5",
     "@google-cloud/pubsub": "^4.1.0",
     "@noony/core": "file:/Users/javierbenavides/others/dev/noony/noony-core/build",
+    "@types/cors": "^2.8.17",
     "axios": "^1.7.9",
+    "cors": "^2.8.5",
     "dayjs": "^1.11.13",
     "express": "^4.18.2",
     "firebase-admin": "^12.6.0",
@@ -63,6 +74,8 @@
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "dotenv": "^16.4.7",
     "esbuild": "^0.25.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",

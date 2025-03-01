@@ -1,6 +1,7 @@
 {
   "functions": {
     "source": "build",
+    "env": ".env",
     "ignore": [
       "node_modules",
       ".git",

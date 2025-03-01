@@ -1,3 +1,4 @@
+import '../../config/environment';
 import 'reflect-metadata';
 import express from 'express';
 import { CustomRequest, CustomResponse } from '@noony/core';
