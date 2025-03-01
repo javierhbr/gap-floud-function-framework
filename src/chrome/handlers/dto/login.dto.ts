@@ -23,8 +23,13 @@ export const SentOtpRequestSchema = z.object({
 
 // VerifyOtpRequest schema
 export const VerifyOtpRequestSchema = z.object({
-  email: z.string(),
-  verification: z.string(),
+  email: z.string().email(),
+  verification: z
+    .string()
+    .regex(
+      /^[A-Za-z0-9!@#$%^&*()_+=[\]{};':"\\|,.<>/?-]{9}$/,
+      'Verification must be exactly 9 characters long and may include alphanumeric characters and special characters.'
+    ),
   error: ErrorSchema.optional(),
 });
 

@@ -30,6 +30,7 @@ jest.spyOn(Container, 'get').mockImplementation((service) => {
 });
 
 // A helper function to create a dummy context with a proper res object
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function createContext<TReq, TRes>(parsedBody: unknown = {}) {
   return {
     req: {
@@ -154,6 +155,25 @@ describe('requestOtpHandler', () => {
     expect(context.res.locals.responseBody).toEqual(expectedResponse);
   });
 
+  test('should return an error response when wrong email', async () => {
+    const sentOtpRequest: SentOtpRequest = {
+      email: 'testtest.com',
+    };
+    const context = createContext(sentOtpRequest);
+
+    // Execute the handler with our casted req/res objects.
+    await requestOtpHandler.execute(context.req as any, context.res as any);
+
+    // The error middleware in the chain should have set a status and returned an error response via res.json.
+    expect(context.res.status).toHaveBeenCalledWith(expect.any(Number));
+    expect(context.res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: expect.stringContaining('Validation error'),
+        details: expect.any(Array),
+      })
+    );
+  });
+
   test('should return an error response when request body is missing', async () => {
     const context = createContext(undefined);
 
@@ -179,7 +199,7 @@ describe('verifyOtpHandler', () => {
   test('should call loginApi.verifyOtp and set the response on success', async () => {
     const verifyOtpReq: VerifyOtpRequest = {
       email: 'test@test.com',
-      verification: '12345',
+      verification: 'tokenXYZ#',
     };
     const expectedResponse: VerifyOtpResponse = {
       email: 'test@test.com',
@@ -196,6 +216,27 @@ describe('verifyOtpHandler', () => {
     expect(mockLoginApi.verifyOtp).toHaveBeenCalledWith(verifyOtpReq);
     // Verify that the response was stored in res.locals
     expect(context.res.locals.responseBody).toEqual(expectedResponse);
+  });
+
+  test('should return an error response when email or verification is invalid', async () => {
+    const verifyOtpReq: VerifyOtpRequest = {
+      email: 'testtest.com',
+      verification: 'tokenXYZ',
+    };
+
+    const context = createContext(verifyOtpReq);
+
+    // Execute the handler. The error middleware in the chain should handle the missing body error.
+    await verifyOtpHandler.execute(context.req as any, context.res as any);
+
+    // Expect that an HTTP error status is set and a JSON error response is returned.
+    expect(context.res.status).toHaveBeenCalledWith(expect.any(Number));
+    expect(context.res.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: expect.stringContaining('Validation error'),
+        details: expect.any(Array),
+      })
+    );
   });
 
   test('should return an error response when request body is missing', async () => {

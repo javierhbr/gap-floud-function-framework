@@ -4,6 +4,7 @@ import {
   OtpRequest,
   VerifyOtpRequest,
 } from '../domain/genericDomain';
+import { VerifyOtpResponse } from '../handlers/dto/login.dto';
 
 @Service()
 export class LoginService {
@@ -20,17 +21,14 @@ export class LoginService {
     };
   }
 
-  async sendOtp(otpRequest: OtpRequest) {
+  async sendOtp(otpRequest: OtpRequest): Promise<void> {
     console.log(`LoginService.sendOtp: ${JSON.stringify(otpRequest)}`);
-
-    // Mock response
-    return Promise.resolve({ message: 'OTP sent successfully' });
   }
 
-  async verifyOtp(verifyOtp: VerifyOtpRequest) {
+  async verifyOtp(verifyOtp: VerifyOtpRequest): Promise<VerifyOtpResponse> {
     console.log(`LoginService.verifyOtp: ${JSON.stringify(verifyOtp)}`);
 
     // Mock response
-    return Promise.resolve({ success: true });
+    return { email: verifyOtp.email, token: 'token' };
   }
 }
