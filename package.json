@@ -4,6 +4,13 @@
   "description": "Google Cloud Functions Framework with TypeScript",
   "main": "index.js",
   "scripts": {
+    "clean:esbuild": "rm -rf dist",
+    "build:esbuild": "node esbuild.config.ts",
+    "build:esbuild:watch": "node esbuild.config.ts --watch",
+    "build:esbuild:prod":  "npm run clean && NODE_ENV=production npm run build:esbuild",
+    "deploy:esbuild:firebase": "esbuild-visualizer --metadata ./dist/bundle-analysis.json --open",
+
+
     "build": "tsc -p tsconfig.json && cp package.json build/",
     "watch": "tsc -w",
     "start:api:userApi": "npm run build && functions-framework --target=userApi --source=build",
@@ -57,6 +64,7 @@
     "@typescript-eslint/eslint-plugin": "^6.15.0",
     "@typescript-eslint/parser": "^6.15.0",
     "concurrently": "^8.2.2",
+    "esbuild": "^0.25.0",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.1.2",
